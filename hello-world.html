@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>你好，世界！ · Hello, World!</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <a href="../index.html" class="site-title">🏠 我的博客</a>
+    <div class="nav-links">
+      <a href="../index.html" class="zh-nav">首页</a>
+      <a href="../about.html" class="zh-nav">关于</a>
+      <a href="../index.html" class="en-nav" style="display:none;">Home</a>
+      <a href="../about.html" class="en-nav" style="display:none;">About</a>
+      <button class="lang-switch" onclick="toggleLang()" title="切换语言 / Switch Language">
+        <span class="zh-nav">🌐 EN</span>
+        <span class="en-nav" style="display:none;">🌐 中文</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- 文章内容 -->
+  <main class="container">
+    <article>
+      <!-- 文章标题 -->
+      <header class="article-header">
+        <h1 class="zh">你好，世界！</h1>
+        <h1 class="en" style="display:none;">Hello, World!</h1>
+        <div class="article-meta">2026-07-24</div>
+      </header>
+
+      <!-- 文章正文 -->
+      <div class="article-body">
+
+        <!-- ====== 中文内容 ====== -->
+        <div class="zh">
+          <p>这是我的第一篇博客文章。🎉</p>
+
+          <h2>为什么开始写博客？</h2>
+          <p>
+            一直想有一个属于自己的小空间来记录想法和学到的知识。
+            与其把笔记散落在各处，不如整理成一个网站，既能帮助自己回顾，也可能对别人有用。
+          </p>
+
+          <h2>这个网站是怎么搭的？</h2>
+          <p>
+            这个网站超级简单——只用了 <strong>HTML + CSS</strong>，托管在 GitHub Pages（免费）。
+            没有任何复杂的框架或工具，打开浏览器就能看。
+          </p>
+          <p>
+            选 GitHub Pages 的原因很简单：<strong>免费、稳定、不用自己管服务器</strong>。
+            写完文章往仓库里一放，网站就自动更新了。
+          </p>
+
+          <blockquote>
+            "The scariest moment is always just before you start."<br>
+            —— 最可怕的时刻，总是在你开始之前。
+          </blockquote>
+
+          <p>那就从这里开始吧 🚀</p>
+        </div>
+
+        <!-- ====== 英文内容 ====== -->
+        <div class="en" style="display:none;">
+          <p>This is my very first blog post. 🎉</p>
+
+          <h2>Why start a blog?</h2>
+          <p>
+            I've always wanted a little corner of the internet to write down thoughts and things I learn.
+            Rather than scattering notes everywhere, putting them on a website helps me review them — and maybe helps others too.
+          </p>
+
+          <h2>How was this site built?</h2>
+          <p>
+            This site is super simple — just <strong>HTML + CSS</strong>, hosted on GitHub Pages (free).
+            No complicated frameworks or tools. It just works.
+          </p>
+          <p>
+            I chose GitHub Pages because it's <strong>free, reliable, and zero-maintenance</strong>.
+            Whenever I add a new post to the repo, the site updates automatically.
+          </p>
+
+          <blockquote>
+            "The scariest moment is always just before you start."<br>
+            —— Stephen King
+          </blockquote>
+
+          <p>So let's begin 🚀</p>
+        </div>
+
+      </div>
+
+      <!-- 返回链接 -->
+      <a href="../index.html" class="back-link">
+        <span class="zh">← 返回首页</span>
+        <span class="en" style="display:none;">← Back to Home</span>
+      </a>
+    </article>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <span class="zh">由 GitHub Pages 驱动 · 自己动手搭建 🛠️</span>
+    <span class="en" style="display:none;">Powered by GitHub Pages · Built with ❤️</span>
+  </footer>
+
+  <!-- 语言切换脚本 -->
+  <script>
+    (function() {
+      const saved = localStorage.getItem('blog-lang') || 'zh';
+      setLang(saved);
+    })();
+
+    function toggleLang() {
+      const current = document.documentElement.lang === 'zh-CN' ? 'en' : 'zh';
+      setLang(current);
+      localStorage.setItem('blog-lang', current);
+    }
+
+    function setLang(lang) {
+      document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+      const zhEls = document.querySelectorAll('.zh, .zh-nav');
+      const enEls = document.querySelectorAll('.en, .en-nav');
+      if (lang === 'zh') {
+        zhEls.forEach(el => el.style.display = '');
+        enEls.forEach(el => el.style.display = 'none');
+      } else {
+        zhEls.forEach(el => el.style.display = 'none');
+        enEls.forEach(el => el.style.display = '');
+      }
+    }
+  </script>
+
+</body>
+</html>
