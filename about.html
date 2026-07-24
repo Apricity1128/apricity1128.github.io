@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>关于 · About</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <a href="index.html" class="site-title">🏠 我的博客</a>
+    <div class="nav-links">
+      <a href="index.html" class="zh-nav">首页</a>
+      <a href="about.html" class="active zh-nav">关于</a>
+      <a href="index.html" class="en-nav" style="display:none;">Home</a>
+      <a href="about.html" class="active en-nav" style="display:none;">About</a>
+      <button class="lang-switch" onclick="toggleLang()" title="切换语言 / Switch Language">
+        <span class="zh-nav">🌐 EN</span>
+        <span class="en-nav" style="display:none;">🌐 中文</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- 关于内容 -->
+  <main class="container">
+    <div class="about-section">
+      <h2 class="zh">关于我</h2>
+      <h2 class="en" style="display:none;">About Me</h2>
+
+      <p class="zh">
+        你好！欢迎来到我的博客。<br><br>
+        这里是我记录想法、分享经验和整理知识的地方。
+        目前博客还在慢慢搭建中，内容会陆续更新。
+      </p>
+      <p class="en" style="display:none;">
+        Hi! Welcome to my blog.<br><br>
+        This is where I jot down thoughts, share experiences, and organize what I learn.
+        The site is still growing — more content coming soon!
+      </p>
+
+      <p class="zh" style="margin-top:1.5em; font-size:0.9em; color:#999;">
+        📬 联系方式：可以在这里放你的邮箱或社交账号
+      </p>
+      <p class="en" style="display:none; margin-top:1.5em; font-size:0.9em; color:#999;">
+        📬 Contact: Put your email or social links here
+      </p>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <span class="zh">由 GitHub Pages 驱动 · 自己动手搭建 🛠️</span>
+    <span class="en" style="display:none;">Powered by GitHub Pages · Built with ❤️</span>
+  </footer>
+
+  <!-- 语言切换脚本 -->
+  <script>
+    (function() {
+      const saved = localStorage.getItem('blog-lang') || 'zh';
+      setLang(saved);
+    })();
+
+    function toggleLang() {
+      const current = document.documentElement.lang === 'zh-CN' ? 'en' : 'zh';
+      setLang(current);
+      localStorage.setItem('blog-lang', current);
+    }
+
+    function setLang(lang) {
+      document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+      const zhEls = document.querySelectorAll('.zh, .zh-nav');
+      const enEls = document.querySelectorAll('.en, .en-nav');
+      if (lang === 'zh') {
+        zhEls.forEach(el => el.style.display = '');
+        enEls.forEach(el => el.style.display = 'none');
+      } else {
+        zhEls.forEach(el => el.style.display = 'none');
+        enEls.forEach(el => el.style.display = '');
+      }
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的博客 · My Blog</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <a href="index.html" class="site-title">🏠 我的博客</a>
+    <div class="nav-links">
+      <a href="index.html" class="active zh-nav">首页</a>
+      <a href="about.html" class="zh-nav">关于</a>
+      <a href="index.html" class="active en-nav" style="display:none;">Home</a>
+      <a href="about.html" class="en-nav" style="display:none;">About</a>
+      <button class="lang-switch" onclick="toggleLang()" title="切换语言 / Switch Language">
+        <span class="zh-nav">🌐 EN</span>
+        <span class="en-nav" style="display:none;">🌐 中文</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- 头部 -->
+  <header class="hero">
+    <h1 class="zh">欢迎来到我的博客</h1>
+    <h1 class="en" style="display:none;">Welcome to My Blog</h1>
+    <div class="subtitle">
+      <span class="zh">记录思考，分享生活 ☕</span>
+      <span class="en">Thoughts, stories, and ideas ☕</span>
+    </div>
+  </header>
+
+  <!-- 文章列表 -->
+  <main class="container">
+    <ul class="post-list">
+
+      <!-- ====== 添加新文章：复制下面整个 <li> 块，修改内容即可 ====== -->
+      <li class="post-card">
+        <a href="posts/hello-world.html">
+          <h2>
+            <span class="zh">你好，世界！</span>
+            <span class="en" style="display:none;">Hello, World!</span>
+            <span class="post-lang-tag">中英</span>
+          </h2>
+          <div class="post-date">2026-07-24</div>
+          <div class="post-excerpt">
+            <span class="zh">这是我的第一篇博客文章，聊聊为什么开始写博客，以及这个网站是怎么搭起来的。</span>
+            <span class="en" style="display:none;">My very first blog post — why I started blogging and how this site was built.</span>
+          </div>
+        </a>
+      </li>
+      <!-- ====== 文章块结束 ====== -->
+
+    </ul>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <span class="zh">由 GitHub Pages 驱动 · 自己动手搭建 🛠️</span>
+    <span class="en" style="display:none;">Powered by GitHub Pages · Built with ❤️</span>
+  </footer>
+
+  <!-- 语言切换脚本 -->
+  <script>
+    // 页面加载时读取保存的语言设置
+    (function() {
+      const saved = localStorage.getItem('blog-lang') || 'zh';
+      setLang(saved);
+    })();
+
+    function toggleLang() {
+      const current = document.documentElement.lang === 'zh-CN' ? 'en' : 'zh';
+      setLang(current);
+      localStorage.setItem('blog-lang', current);
+    }
+
+    function setLang(lang) {
+      document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+      const zhEls = document.querySelectorAll('.zh, .zh-nav');
+      const enEls = document.querySelectorAll('.en, .en-nav');
+      if (lang === 'zh') {
+        zhEls.forEach(el => el.style.display = '');
+        enEls.forEach(el => el.style.display = 'none');
+      } else {
+        zhEls.forEach(el => el.style.display = 'none');
+        enEls.forEach(el => el.style.display = '');
+      }
+    }
+  </script>
+
+</body>
+</html>
