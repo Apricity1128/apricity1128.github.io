@@ -88,11 +88,14 @@ export const integ: IntegrationUserConfig = {
     // Friend logbook
     logbook: [],
     // Yourself link info
+    // 注意：Avatar 必须指向 public/ 下真实存在的文件。
+    // 首页头像用的是 src/assets/avatar.jpg，它经过 Astro 图片管线处理，
+    // 不会以固定路径出现在 public/ 里，所以这里不能写 /avatar.jpg。
     applyTip: [
       { name: 'Name', val: theme.title },
       { name: 'Desc', val: theme.description || 'Null' },
       { name: 'Link', val: 'https://apricity1128.github.io/' },
-      { name: 'Avatar', val: 'https://apricity1128.github.io/avatar.svg' }
+      { name: 'Avatar', val: 'https://apricity1128.github.io/favicon/android-chrome-192x192.png' }
     ],
     // Cache avatars in `public/avatars/` to improve user experience.
     cacheAvatar: false
