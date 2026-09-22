@@ -63,3 +63,40 @@ console.log('✅ src/assets/avatar.jpg')
 
 await sharp(Buffer.from(socialCardSvg(1200, 630))).png().toFile('public/images/social-card.png')
 console.log('✅ public/images/social-card.png')
+
+/* ---------------- 站点图标 ---------------- */
+
+/** 小尺寸图标：暖色圆角方块 + 白色 A，圆角比例更小以便在 16px 下也看得清 */
+function faviconSvg(size) {
+  const r = Math.round(size * 0.22)
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+  <defs>
+    <linearGradient id="f" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="rgb(${WARM.r},${WARM.g},${WARM.b})"/>
+      <stop offset="100%" stop-color="rgb(${WARM_DARK.r},${WARM_DARK.g},${WARM_DARK.b})"/>
+    </linearGradient>
+  </defs>
+  <rect width="${size}" height="${size}" rx="${r}" fill="url(#f)"/>
+  <text x="50%" y="53%" text-anchor="middle" dominant-baseline="central"
+    font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="${size * 0.62}"
+    font-weight="700" fill="#fffdf9">A</text>
+</svg>`
+}
+
+const ICON_SIZES = [
+  ['public/favicon/favicon-16x16.png', 16],
+  ['public/favicon/favicon-32x32.png', 32],
+  ['public/favicon/apple-touch-icon.png', 180],
+  ['public/favicon/android-chrome-192x192.png', 192],
+  ['public/favicon/android-chrome-512x512.png', 512]
+]
+
+for (const [file, size] of ICON_SIZES) {
+  await sharp(Buffer.from(faviconSvg(size))).png().toFile(file)
+  console.log(`✅ ${file}`)
+}
+
+// .ico 直接用 32px PNG 充当（现代浏览器都支持 PNG 格式的 ico）
+await sharp(Buffer.from(faviconSvg(32))).resize(32, 32).toFormat('png').toFile('public/favicon/favicon.ico')
+console.log('✅ public/favicon/favicon.ico')
+

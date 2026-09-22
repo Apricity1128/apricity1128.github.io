@@ -1,1 +1,13 @@
-{"name":"","short_name":"","icons":[{"src":"/android-chrome-192x192.png","sizes":"192x192","type":"image/png"},{"src":"/android-chrome-512x512.png","sizes":"512x512","type":"image/png"}],"theme_color":"#ffffff","background_color":"#ffffff","display":"standalone"}
+{
+  "name": "Apricity",
+  "short_name": "Apricity",
+  "description": "记录思考与生活 —— 技术笔记、读书摘录和一些没头没尾的想法",
+  "icons": [
+    { "src": "/favicon/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/favicon/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "theme_color": "#f6b25e",
+  "background_color": "#0e0f13",
+  "display": "standalone",
+  "start_url": "/"
+}
