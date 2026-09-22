@@ -485,6 +485,39 @@
   }
 
   /* ------------------------------------------------------------------
+     行号
+     行号节点由 src/plugins/shiki-line-numbers.mjs 在构建期插入，
+     是每个 .line 的第一个子元素。
+     ------------------------------------------------------------------ */
+  .code-block .line-number {
+    /* 固定宽度 + 右对齐，个位数和两位数不会错位 */
+    display: inline-block;
+    width: 2em;
+    margin-right: 1.1em;
+    text-align: right;
+    color: var(--fg-subtle);
+    opacity: 0.7;
+    /* 复制代码时不带上行号 */
+    user-select: none;
+    -webkit-user-select: none;
+    /* 不受 Shiki 双主题 token 颜色的影响 */
+    font-style: normal;
+    font-weight: 400;
+  }
+
+  /* 行号不能跟着深色 token 变色，这里显式固定成弱化色 */
+  .dark .code-block .line-number {
+    color: var(--fg-subtle) !important;
+  }
+
+  /* 窄屏上行号会挤占正文宽度，直接隐藏 */
+  @media (max-width: 480px) {
+    .code-block .line-number {
+      display: none;
+    }
+  }
+
+  /* ------------------------------------------------------------------
      双主题切换
      Shiki 在双主题模式下的输出方式：
        · 每个 token 上写内联样式 color:#xxx（浅色）和 --shiki-dark:#xxx（深色变量）

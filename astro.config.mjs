@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import pagefind from './src/integrations/pagefind.mjs';
+import lineNumbers from './src/plugins/shiki-line-numbers.mjs';
 import { SITE } from './src/data/site.mjs';
 
 // https://astro.build/config
@@ -27,6 +28,8 @@ export default defineConfig({
         dark: 'github-dark',
       },
       wrap: false,
+      // 给代码块加行号，见 src/plugins/shiki-line-numbers.mjs
+      transformers: [lineNumbers()],
     },
 
     // 注 1：Astro 7 的默认 Markdown 处理器是 Sätteri（Rust 实现），

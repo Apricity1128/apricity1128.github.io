@@ -113,5 +113,14 @@ const ogImage = new URL('/og.png', Astro.site).href;
     </main>
 
     <Footer />
+
+    <!--
+      代码块增强：给 Shiki 生成的 <pre class="astro-code"> 包上头部，
+      加上语言标签和复制按钮（见 src/scripts/code-blocks.js）。
+      以前这个脚本没有被任何页面引用，所以一直没生效。
+    -->
+    <script>
+      import '../scripts/main.js';
+    </script>
   </body>
 </html>

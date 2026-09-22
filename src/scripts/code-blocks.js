@@ -69,6 +69,19 @@ async function copyText(text) {
   }
 }
 
+/**
+ * 取出代码的纯文本，用于复制。
+ *
+ * 不能直接用 code.textContent —— 行号节点也在 <pre> 里面（见
+ * src/plugins/shiki-line-numbers.mjs），直接取会把行号一起复制进去，
+ * 粘出来就是 "1// 注释" 这种废码。这里克隆一份、删掉行号再取文本。
+ */
+function getCodeText(code) {
+  const clone = code.cloneNode(true);
+  clone.querySelectorAll('.line-number').forEach((el) => el.remove());
+  return clone.textContent ?? '';
+}
+
 function enhance(pre) {
   if (pre.dataset.enhanced === 'true') return;
   pre.dataset.enhanced = 'true';
@@ -100,7 +113,7 @@ function enhance(pre) {
 
   let resetTimer;
   button.addEventListener('click', async () => {
-    const ok = await copyText(code.textContent ?? '');
+    const ok = await copyText(getCodeText(code));
     button.textContent = ok ? '已复制' : '复制失败';
     button.dataset.copied = String(ok);
 
