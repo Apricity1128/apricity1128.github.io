@@ -10,14 +10,11 @@ const meta = {
 
 <PageLayout {meta}>
   <script is:inline>
-    // 获取页面 url，如：https://arthals.ink/posts/experience/attack-lab
-    // 根据 /  进行分割，只要最后一段：attack-lab
-    // 然后导航到 /blog/ + 最后一段
-    // 如：https://arthals.ink/posts/experience/attack-lab -> /blog/attack-lab
-    // 然后进行页面跳转
+    // 兼容旧链接：把 /posts/xxx 重定向到 /blog/xxx
+    // 例如访问 /posts/attack-lab 时跳转到 /blog/attack-lab
     const url = new URL(window.location.href)
     const path = url.pathname.split('/')
-    // 如果发现 posts 字样，则进行页面跳转
+    // 如果路径里含 posts，就按最后一段跳到 /blog/ 下
     if (path.includes('posts')) {
       const newUrl = `/blog/${path.pop()}`
       // 进行页面跳转
