@@ -16,6 +16,7 @@
 | 文章目录（TOC） | 从 Markdown 标题自动提取，滚动时高亮当前小节 |
 | 代码高亮 | Shiki 双主题，浅色/深色各一套配色，带语言标签和复制按钮 |
 | 数学公式 | 支持 `$...$` 与 `$$...$$`，构建期用 KaTeX 渲染 |
+| 项目页 | 分区 + 2 列卡片网格，链接按类型显示图标（Astro Theme Pure 风格） |
 | 标签分类 | `tags` 字段，自动生成标签页 |
 | RSS 订阅 | `/rss.xml` |
 | 站点地图 | `/sitemap-index.xml` |
@@ -159,6 +160,44 @@ $$
 
 头像替换：把自己的图片放进 `public/`（例如 `public/avatar.png`），
 然后改 `src/data/site.mjs` 里的 `author.avatar`。
+
+### 项目页怎么改
+
+项目页按**分区**组织，每个分区下面是 2 列卡片网格（风格参考
+[Astro Theme Pure](https://github.com/cworld1/astro-theme-pure)）。
+数据在 `src/data/projects.json`：
+
+```json
+{
+  "sections": [
+    {
+      "title": "项目",
+      "description": "这一类的说明，可省略",
+      "items": [
+        {
+          "name": "项目名",
+          "description": "一两句话说明它解决了什么问题",
+          "tags": ["Astro", "TypeScript"],
+          "year": "2026",
+          "image": "",
+          "links": [
+            { "type": "repo", "href": "https://github.com/..." },
+            { "type": "site", "href": "https://demo.example.com" },
+            { "type": "docs", "href": "https://docs.example.com" }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+- `links` 里的 `type` 决定图标和悬浮颜色：
+  `repo`（GitHub）/ `site`（地球）/ `docs`（文档）/ `release`（发布包）。
+  卡片标题会跳到第一个 `site` 链接，没有就跳第一个链接。
+- `image` 填 `public/` 下图片的相对路径，会作为卡片右侧的渐隐背景图，可省略。
+- 分区的 `items` 为空时会自动隐藏，不会出现空标题。
+- 链接的 `href` 也可以写站内路径，比如 `/blog/CCPC-网络赛/`。
 
 ---
 

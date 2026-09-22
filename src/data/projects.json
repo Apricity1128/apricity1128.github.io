@@ -1,23 +1,46 @@
 {
   "intro": "这里放一些我自己做的小东西。多数是自用工具和小实验，代码基本都开源在 GitHub 上。",
-  "items": [
+  "sections": [
     {
-      "name": "个人博客",
-      "description": "你正在看的这个网站。基于 Astro 构建，支持深色模式、全文搜索和标签分类，通过 GitHub Actions 自动部署到 GitHub Pages。",
-      "tags": ["Astro", "Tailwind CSS", "TypeScript"],
-      "href": "https://github.com/Apricity1128/apricity1128.github.io",
-      "repo": "https://github.com/Apricity1128/apricity1128.github.io",
-      "year": "2026",
-      "featured": true
+      "title": "项目",
+      "description": "完整的应用和工具。",
+      "items": [
+        {
+          "name": "个人博客",
+          "description": "你正在看的这个网站。基于 Astro 构建，支持深色模式、全文搜索、数学公式和标签分类，通过 GitHub Actions 自动部署到 GitHub Pages。",
+          "tags": ["Astro", "Tailwind CSS", "TypeScript"],
+          "year": "2026",
+          "links": [
+            { "type": "repo", "href": "https://github.com/Apricity1128/apricity1128.github.io" },
+            { "type": "site", "href": "https://apricity1128.github.io" }
+          ]
+        },
+        {
+          "name": "示例项目",
+          "description": "把 src/data/projects.json 里的这一项换成你自己的项目就行。写清楚它解决了什么问题、用了什么技术。",
+          "tags": ["示例"],
+          "year": "2026",
+          "links": []
+        }
+      ]
     },
     {
-      "name": "示例项目",
-      "description": "把 src/data/projects.json 里的这一项换成你自己的项目就行。可以写清楚它解决了什么问题、用了什么技术。",
-      "tags": ["示例"],
-      "href": "",
-      "repo": "",
-      "year": "2026",
-      "featured": false
+      "title": "笔记与课程",
+      "description": "学习过程中整理的东西。",
+      "items": [
+        {
+          "name": "CCPC 网络赛题解",
+          "description": "记录比赛的解题思路，包含中位数计数、范德蒙德卷积等推导过程。",
+          "tags": ["算法", "题解"],
+          "year": "2026",
+          "links": [{ "type": "site", "href": "/blog/CCPC-网络赛/" }]
+        }
+      ]
+    },
+    {
+      "title": "其他",
+      "description": "零散的小东西和实验。",
+      "items": []
     }
   ]
 }
