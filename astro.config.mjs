@@ -28,8 +28,13 @@ export default defineConfig({
       },
       wrap: false,
     },
-    // 注：Astro 7 起默认的 Sätteri 处理器已内置 GFM 和智能标点，
-    // 不再需要 remarkRehype / smartypants 配置。
+
+    // 注 1：Astro 7 的默认 Markdown 处理器是 Sätteri（Rust 实现），
+    // 内置 GFM 和智能标点，旧的 remarkRehype / smartypants 配置已不再支持。
+    //
+    // 注 2：数学公式**不在这里配置**。Sätteri 虽然内置 features.math，
+    // 但实测无法通过 markdown.processor 干预（配置传进去也不生效），
+    // 所以公式改由 src/utils/math.mjs 在正文进入渲染管线前预处理成 KaTeX HTML。
   },
 
   build: {

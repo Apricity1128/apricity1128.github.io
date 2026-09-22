@@ -15,6 +15,7 @@
 | 站内全文搜索 | [Pagefind](https://pagefind.app)，构建期生成索引，纯静态无需服务端 |
 | 文章目录（TOC） | 从 Markdown 标题自动提取，滚动时高亮当前小节 |
 | 代码高亮 | Shiki 双主题，浅色/深色各一套配色，带语言标签和复制按钮 |
+| 数学公式 | 支持 `$...$` 与 `$$...$$`，构建期用 KaTeX 渲染 |
 | 标签分类 | `tags` 字段，自动生成标签页 |
 | RSS 订阅 | `/rss.xml` |
 | 站点地图 | `/sitemap-index.xml` |
@@ -124,6 +125,25 @@ npm run new "文章标题" -- --no-frontmatter   # 完全不要 frontmatter
 文件名写 `2026-02-05-标题.md` → 粘贴正文 → **Commit changes**。
 一分钟左右网站就会更新。
 
+### 写数学公式
+
+直接写 LaTeX，用 `$` 包裹即可，构建时会渲染成 KaTeX：
+
+```markdown
+行内公式：当 $n \to \infty$ 时收敛。
+
+行间公式（前后各留一个空行）：
+
+$$
+\sum_{i=1}^{n} \binom{n}{i} = 2^n
+$$
+```
+
+- `$...$` 行内公式，`$$...$$` 行间公式
+- 代码块和行内代码里的 `$` 不会被当成公式
+- 想输出字面量美元符号，用 `\$` 转义
+- 公式写错不会让构建失败，页面上会以原始文本显示，方便你发现
+
 ---
 
 ## 改站点内容
@@ -215,6 +235,17 @@ push → 安装依赖 → astro build（含 Pagefind 索引）→ 上传 dist/ �
   frontmatter，作者会以为标签丢了却找不到原因，所以加载器会直接抛出带说明的错误。
 - **Astro 7 的 Markdown 处理器**默认是 Sätteri，内置 GFM 和智能标点，
   旧的 `remarkRehype` / `smartypants` 配置已不再支持。
+- **数学公式为什么不用 rehype-katex 的常规接法**：Sätteri 虽然内置 `features.math`，
+  但实测无法通过 `markdown.processor` 干预（配置传进去也不生效，公式会原样留下
+  `$` 符号）。所以改成两步：先让 Astro 正常渲染 Markdown，再在产出的 HTML 上把
+  `$...$` / `$$...$$` 换成 KaTeX。实现见 `src/utils/math.mjs`，其中会先摘出
+  代码块再处理公式，避免代码里的 `$` 被误判。
+- **自定义加载器必须自己产出 `rendered.html`**：`astro:content` 的 `render(entry)`
+  在自定义加载器下读的是 `entry.rendered.html`，**不是** `entry.body`。只 set body、
+  rendered 留空的话，页面上正文会整个消失（而且不报错，很难查）。
+- **`store.set` 不要传 `digest`**：digest 相同时它会直接跳过写入，而 Astro 在两次
+  加载之间会把 store 序列化再读回，`rendered`（渲染好的 HTML）在往返中会丢失 ——
+  结果是第二次加载被跳过、正文消失。那套去重是给官方 glob loader 的增量渲染用的。
 - **Pagefind 必须构建后才能用**，所以集成挂在 `astro:build:done` 钩子上，
   不需要在 npm scripts 里再串一条命令。
 - **搜索页的动态 import 不能用字面量写法**：Vite 会把它改写成

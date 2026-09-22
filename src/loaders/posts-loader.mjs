@@ -24,8 +24,9 @@ import { promises as fs, existsSync } from 'node:fs';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { extname, join, relative, resolve, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parse as parseYaml } from 'yaml';
+import { renderMathInHtml, stripMathFromText } from '../utils/math.mjs';
 
 const execFileAsync = promisify(execFile);
 
@@ -179,7 +180,7 @@ async function gitUpdated(filePath, cwd) {
 export function postsLoader({ base = 'posts' } = {}) {
   return {
     name: 'posts-loader',
-    load: async ({ config, store, logger, parseData, generateDigest, watcher }) => {
+    load: async ({ config, store, logger, parseData, generateDigest, watcher, renderMarkdown }) => {
       const dir = resolve(fileURLToPathSafe(config.root), base);
       const log = logger.fork('posts');
 
@@ -252,6 +253,8 @@ export function postsLoader({ base = 'posts' } = {}) {
             (updatedIso && updatedIso !== createdIso ? updatedIso : undefined);
 
           // ---- 标题与摘要 ----
+          // 摘要要先把公式整体去掉，否则 $a$、\frac{a}{b} 这类 LaTeX 源码会
+          // 原样进 meta description 和列表页，看起来像乱码。
           const title =
             (typeof frontmatter.title === 'string' && frontmatter.title.trim()) ||
             extractHeadingTitle(body) ||
@@ -259,7 +262,7 @@ export function postsLoader({ base = 'posts' } = {}) {
 
           const description =
             (typeof frontmatter.description === 'string' && frontmatter.description.trim()) ||
-            deriveDescription(body);
+            deriveDescription(stripMathFromText(body));
 
           const data = await parseData({
             id: slug,
@@ -274,13 +277,41 @@ export function postsLoader({ base = 'posts' } = {}) {
             },
           });
 
+          // ---- 渲染 HTML ----
+          //
+          // 这一步是必须的：astro:content 的 render(entry) 在自定义加载器下用的是
+          // entry.rendered.html，而**不是** entry.body（见 astro/dist/content/runtime.js
+          // 的 renderEntry）。只 set body、rendered 留空的话，正文会整个消失。
+          //
+          // 顺序很关键：先让 Astro 渲染原始 Markdown（这样标题锚点、代码高亮、
+          // 图片处理和站内其它页面完全一致），再在产出的 HTML 上把公式换成 KaTeX。
+          // 反过来先处理 Markdown 会把 frontmatter 解析搞乱。
+          let rendered;
+          if (typeof renderMarkdown === 'function') {
+            const result = await renderMarkdown(contents, { fileURL: pathToFileURL(filePath) });
+            const rawHtml = result.html ?? result.code ?? '';
+            rendered = {
+              html: renderMathInHtml(rawHtml),
+              metadata: {
+                headings: result.metadata?.headings ?? [],
+                imagePaths: result.metadata?.imagePaths ?? [],
+                frontmatter: result.metadata?.frontmatter ?? {},
+              },
+            };
+          }
+
           store.set({
             id: slug,
             data,
+            // body 存原始正文：目录、阅读时长、搜索都基于它，保持和作者写的一致
             body,
             filePath: relPath,
-            digest: generateDigest(contents),
-            rendered: undefined,
+            // 注意：这里**不能**传 digest。
+            // store.set 在 digest 与已有条目相同时会直接 return false 跳过写入，
+            // 而 Astro 在两次加载之间会把 store 序列化再读回，rendered（渲染好的
+            // HTML）在往返中会丢失 —— 结果是第二次加载被跳过，页面上正文整个消失。
+            // digest 那套去重是给官方 glob loader 的增量渲染用的，这里不适用。
+            rendered,
           });
 
           staleIds.delete(slug);

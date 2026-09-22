@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* KaTeX 的排版样式（数学公式渲染，见 astro.config.mjs 的 markdown.processor） */
+@import 'katex/dist/katex.min.css';
+
 /* ==========================================================================
    深色模式
    用 .dark 类控制，配合 <html> 上的内联脚本避免首屏白闪。
@@ -506,6 +509,35 @@
 
   .dark .astro-code {
     background-color: var(--shiki-dark-bg, var(--bg-subtle)) !important;
+  }
+}
+
+/* ==========================================================================
+   数学公式（KaTeX）
+   公式在构建期由 rehype-katex 渲染成 HTML，这里只做排版微调。
+   样式表来自 katex/dist/katex.min.css，已在文件顶部 @import。
+   ========================================================================== */
+@layer components {
+  /* 行内公式：略小一点，避免在中文行高里显得突兀 */
+  .prose-blog .katex {
+    font-size: 1.05em;
+  }
+
+  /* 独立成行的公式块：居中、可横向滚动（长公式在手机上不会撑破布局） */
+  .prose-blog .katex-display {
+    margin: 1.6em 0;
+    padding: 0.2em 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .prose-blog .katex-display > .katex {
+    font-size: 1.1em;
+  }
+
+  /* 公式渲染失败时 katex 会输出带 katex-error 类的红色文本，稍微柔和一点 */
+  .prose-blog .katex-error {
+    color: oklch(0.6 0.18 25);
   }
 }
 
