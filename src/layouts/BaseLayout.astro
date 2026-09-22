@@ -1,126 +1,92 @@
 ---
-/**
- * BaseLayout —— 全站 HTML 骨架
- *
- * 负责：<head> 元信息、SEO/OG、主题初始化（防白闪）、导航栏、页脚。
- * 所有页面都应该用它包一层。
- */
-import '../styles/global.css';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import { SITE } from '../data/site.mjs';
+import { Header, ThemeProvider } from 'astro-pure/components/basic'
+import type { SiteMeta } from 'astro-pure/types'
+import BaseHead from '@/components/BaseHead.astro'
+import config from '@/site-config'
+
+import Footer from '../../packages/pure/components/basic/Footer.astro'
+// Import the global.css file here so that it is included on
+// all pages through the use of the <BaseLayout /> component.
+import '@/assets/styles/global.css'
+import '@/assets/styles/app.css'
+
+interface Props {
+  meta: SiteMeta
+  highlightColor?: string
+}
 
 const {
-  title,
-  description = SITE.description,
-  /** 页面类型，影响 OG 标签 */
-  type = 'website',
-  /** 文章发布日期 / 更新日期，用于 article meta */
-  pubDate,
-  updatedDate,
-  tags = [],
-  /** 是否显示页脚上方的间距 */
-  wide = false,
-} = Astro.props;
-
-const pageTitle = title ? `${title} · ${SITE.title}` : `${SITE.title} · ${SITE.subtitle}`;
-const canonical = new URL(Astro.url.pathname, Astro.site).href;
-const ogImage = new URL('/og.png', Astro.site).href;
+  meta: { articleDate, description = config.description, ogImage, title },
+  highlightColor,
+  ...props
+} = Astro.props
 ---
 
-<!doctype html>
-<html lang={SITE.lang} class="scroll-smooth">
+<html lang={config.locale.lang}>
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="generator" content={Astro.generator} />
-
-    <title>{pageTitle}</title>
-    <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
-
-    <!-- 图标 -->
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/favicon.svg" />
-    <link rel="sitemap" href="/sitemap-index.xml" />
-    <link
-      rel="alternate"
-      type="application/rss+xml"
-      title={`${SITE.title} · RSS`}
-      href="/rss.xml"
-    />
-
-    <!-- Open Graph -->
-    <meta property="og:type" content={type} />
-    <meta property="og:title" content={pageTitle} />
-    <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
-    <meta property="og:site_name" content={SITE.title} />
-    <meta property="og:image" content={ogImage} />
-    <meta property="og:locale" content={SITE.lang.replace('-', '_')} />
-
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={pageTitle} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={ogImage} />
-
-    {pubDate && <meta property="article:published_time" content={pubDate.toISOString()} />}
-    {updatedDate && <meta property="article:modified_time" content={updatedDate.toISOString()} />}
-    {tags.map((tag) => <meta property="article:tag" content={tag} />)}
-
-    <!--
-      主题初始化：必须在样式生效前同步执行，否则深色用户会看到一闪而过的白屏。
-      这里是从 localStorage 或系统偏好取初始值。
-    -->
-    <script is:inline>
-      (() => {
-        try {
-          const stored = localStorage.getItem('theme');
-          const isDark =
-            stored === 'dark' ||
-            (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
-          document.documentElement.classList.toggle('dark', isDark);
-        } catch {
-          /* localStorage 被禁用时忽略，默认浅色 */
-        }
-      })();
-    </script>
-
-    <!-- Pagefind 搜索索引在 /pagefind/ 下，预热一下 -->
-    <link rel="preconnect" href={Astro.site?.origin ?? ''} />
+    <BaseHead {articleDate} {description} {ogImage} {title} />
+    <ThemeProvider />
   </head>
 
-  <body>
-    <a
-      href="#main"
-      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:border focus:border-border-strong focus:bg-bg focus:px-4 focus:py-2 focus:text-sm focus:text-fg"
+  <body class='flex justify-center bg-background text-foreground' {...props}>
+    {
+      highlightColor && (
+        <div
+          id='highlight-gradient'
+          class='pointer-events-none absolute start-0 top-0 z-0 h-screen w-full opacity-25'
+          style={`background-image:linear-gradient(${highlightColor},transparent)`}
+        />
+      )
+    }
+    <div
+      id='main-container'
+      class='w-full max-w-[70rem] min-h-[100dvh] flex flex-col justify-between'
     >
-      跳到主要内容
-    </a>
+      <Header />
+      <div class='flex-1 w-full' data-pagefind-body>
+        <slot />
+      </div>
+      <Footer />
+    </div>
 
-    <Header />
+    {/* Set highlight color */}
+    <style define:vars={{ highlightColor }}>
+      :global(.highlight) {
+        --highlight-fg: color-mix(
+          in srgb,
+          var(--highlightColor) 40%,
+          hsl(var(--foreground)/var(--un-text-opacity, 1))
+        );
+        color: var(--highlight-fg, hsl(var(--primary) / var(--un-text-opacity))) !important;
+      }
+      :global(.highlight-bg) {
+        background-color: var(
+          --highlightColor,
+          hsl(var(--primary) / var(--un-text-opacity))
+        ) !important;
+      }
 
-    <!--
-      data-pagefind-body 告诉 Pagefind 只索引这个区域以内的内容。
-      注意 Pagefind 的规则是「只要站内有任何一个页面带了这个标记，其他没带的页面
-      就完全不会被索引」—— 所以它必须放在这里统一加，而不是只加在文章页上，
-      否则首页、关于、项目等页面会从搜索里消失。
-      个别页面想退出索引，在 page 里用 data-pagefind-ignore 标记即可（见 search.astro）。
-    -->
-    <main id="main" data-pagefind-body class={wide ? 'flex-1 pb-20' : 'flex-1 pb-16'}>
-      <slot />
-    </main>
-
-    <Footer />
-
-    <!--
-      代码块增强：给 Shiki 生成的 <pre class="astro-code"> 包上头部，
-      加上语言标签和复制按钮（见 src/scripts/code-blocks.js）。
-      以前这个脚本没有被任何页面引用，所以一直没生效。
-    -->
-    <script>
-      import '../scripts/main.js';
-    </script>
+      /* Extend safe area for some special screens
+       * https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/env
+       * https://webkit.org/blog/7929/designing-websites-for-iphone-x/
+       */
+      #main-container {
+        padding-top: env(safe-area-inset-top);
+        padding-left: calc(1rem + env(safe-area-inset-left));
+        padding-right: calc(1rem + env(safe-area-inset-right));
+      }
+      @media (min-width: 640px) {
+        #main-container {
+          padding-left: calc(1.75rem + env(safe-area-inset-left));
+          padding-right: calc(1.75rem + env(safe-area-inset-right));
+        }
+      }
+      @media (min-width: 1024px) {
+        #main-container {
+          padding-left: calc(2.5rem + env(safe-area-inset-left));
+          padding-right: calc(2.5rem + env(safe-area-inset-right));
+        }
+      }
+    </style>
   </body>
 </html>

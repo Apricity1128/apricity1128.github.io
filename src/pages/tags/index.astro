@@ -1,47 +1,49 @@
 ---
-/**
- * 标签总览 /tags
- */
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Icon from '../../components/Icon.astro';
-import { getTagCounts, tagToSlug } from '../../utils/posts.js';
+import { getBlogCollection, getUniqueTagsWithCount } from 'astro-pure/server'
+import { Button } from 'astro-pure/user'
+import { cn } from 'astro-pure/utils'
+import PageLayout from '@/layouts/BaseLayout.astro'
 
-const tags = await getTagCounts();
-const total = tags.reduce((sum, t) => sum + t.count, 0);
+const allPosts = await getBlogCollection()
+const allTags = getUniqueTagsWithCount(allPosts)
+
+const meta = {
+  description: "A list of all the topics I've written about in my posts",
+  title: '全部标签'
+}
 ---
 
-<BaseLayout title="标签" description="按标签浏览全部文章">
-  <div class="container-page pt-10 sm:pt-14">
-    <header class="mb-8">
-      <a
-        href="/blog"
-        class="mb-4 inline-flex items-center gap-1.5 text-sm text-fg-muted transition-colors hover:text-accent"
-      >
-        <Icon name="arrowLeft" size={14} />
-        全部文章
-      </a>
-      <h1 class="text-2xl font-bold tracking-tight text-fg">标签</h1>
-      <p class="mt-1.5 text-sm text-fg-muted">
-        {tags.length} 个标签，共标记 {total} 次
-      </p>
-    </header>
+<PageLayout {meta}>
+  <Button title='Back' href='/blog' variant='back' />
+  <main class='mt-6 lg:mt-10'>
+    <div id='content-header' class='animate'>
+      <h1 class='mb-6 text-3xl font-medium'>Tags</h1>
+    </div>
 
-    {
-      tags.length > 0 ? (
-        <div class="flex flex-wrap gap-2">
-          {tags.map(({ tag, count }) => (
-            <a href={`/tags/${tagToSlug(tag)}`} class="chip !px-3 !py-1.5 !text-sm">
-              <Icon name="hash" size={12} />
-              {tag}
-              <span class="text-fg-subtle">{count}</span>
-            </a>
-          ))}
-        </div>
-      ) : (
-        <div class="card p-6 text-sm text-fg-muted">
-          还没有任何标签。给文章 frontmatter 里的 <code class="text-accent">tags</code> 加几项就会出现。
-        </div>
-      )
-    }
-  </div>
-</BaseLayout>
+    <div id='content' class='animate'>
+      {
+        allTags.length > 0 ? (
+          <ul class='flex flex-wrap gap-4'>
+            {allTags.map(([tag, val]) => (
+              <li>
+                <Button
+                  href={`/tags/${tag}`}
+                  variant='pill'
+                  class={cn(
+                    'items-start gap-x-1',
+                    val > 2 ? 'rounded-xl px-3 py-1 text-xl' : val > 1 && 'text-lg'
+                  )}
+                >
+                  {tag}
+                  <span class={val > 2 ? 'text-base' : 'text-xs'}>{val}</span>
+                </Button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>Any tag yet.</p>
+        )
+      }
+    </div>
+  </main>
+</PageLayout>

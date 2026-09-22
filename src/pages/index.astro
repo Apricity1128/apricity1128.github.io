@@ -1,162 +1,171 @@
 ---
-/**
- * 首页 —— 参考 arthals.ink 的双栏结构
- *
- * 宽屏：左侧个人卡片（sticky），右侧 About / 文章 / 经历 / 技能
- * 窄屏：单栏纵向堆叠
- */
-import BaseLayout from '../layouts/BaseLayout.astro';
-import Icon from '../components/Icon.astro';
-import PostCard from '../components/PostCard.astro';
-import Profile from '../components/Profile.astro';
-import { SITE } from '../data/site.mjs';
-import { getSortedPosts, getTagCounts, tagToSlug } from '../utils/posts.js';
+import { Image } from 'astro:assets'
 
-const posts = await getSortedPosts();
-const tags = await getTagCounts();
-const latest = posts.slice(0, SITE.homePostLimit);
+import { Quote } from 'astro-pure/advanced'
+import { PostPreview } from 'astro-pure/components/pages'
+import { getBlogCollection, sortMDByDate } from 'astro-pure/server'
+import { Button, Card, Icon, Label } from 'astro-pure/user'
+import PageLayout from '@/layouts/BaseLayout.astro'
+import Section from '@/components/home/Section.astro'
+import SkillLayout from '@/components/home/SkillLayout.astro'
+import config from '@/site-config'
+
+const webDevelopment = ['Astro', 'Vue.js', 'React.js', 'TypeScript', 'JavaScript', 'CSS', 'HTML']
+const generalProgramming = ['Python', 'C++', 'C', 'SQL']
+const developmentTools = ['Git', 'VSCode', 'Linux', 'Docker', 'Vite']
+const others = ['Markdown', 'LaTeX']
+
+const MAX_POSTS = 10
+const allPosts = await getBlogCollection()
+const allPostsByDate = sortMDByDate(allPosts).slice(0, MAX_POSTS)
+
+const imagePath = config.logo.src
+const images = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/*.{jpeg,jpg,png,gif,avif,webp}'
+)
+if (!images[imagePath])
+  throw new Error(
+    `"${imagePath}" does not exist in glob: "src/assets/*.{jpeg,jpg,png,gif,avif,webp}"`
+  )
 ---
 
-<BaseLayout wide>
-  <div class="container-wide pt-10 sm:pt-14">
-    <div class="grid grid-cols-1 gap-10 lg:grid-cols-[16rem_1fr] lg:gap-14">
-      <!-- ============ 左栏：个人卡片 ============ -->
-      <!-- data-pagefind-ignore：个人资料和标签云属于界面元素，
-           收进搜索索引会污染搜索结果（比如搜「博客」会命中导航文字） -->
-      <aside data-pagefind-ignore class="lg:sticky lg:top-24 lg:self-start">
-        <Profile />
+<PageLayout meta={{ title: '首页' }} highlightColor='#659EB9'>
+  <main class='flex w-full flex-col items-center'>
+    <section class='animate mb-10 flex flex-col items-center gap-y-7' id='content-header'>
+      <Image
+        src={images[imagePath]()}
+        alt={config.logo.alt || 'Profile'}
+        class='h-28 w-auto rounded-full border p-1'
+        loading='eager'
+        fetchpriority='high'
+      />
 
-        <!-- 标签云 -->
-        {
-          tags.length > 0 && (
-            <div class="mt-8 hidden lg:block">
-              <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
-                标签
-              </p>
-              <div class="flex flex-wrap gap-1.5">
-                {tags.slice(0, 12).map(({ tag, count }) => (
-                  <a href={`/tags/${tagToSlug(tag)}`} class="chip">
-                    {tag}
-                    <span class="text-fg-subtle">{count}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )
-        }
-      </aside>
-
-      <!-- ============ 右栏：主要内容 ============ -->
-      <div class="min-w-0 space-y-14">
-        <!-- About -->
-        <section class="animate-fade-up">
-          <h2 class="section-title">
-            <span class="inline-block h-4 w-1 rounded-full bg-accent"></span>
-            关于
-          </h2>
-          <div class="space-y-4 text-[0.95rem] leading-[1.85] text-fg-muted">
-            {
-              SITE.about.map((paragraph, i) => (
-                <p class={i === 0 ? 'text-fg' : undefined}>{paragraph}</p>
-              ))
-            }
-          </div>
-          <a
-            href="/about"
-            class="mt-5 inline-flex items-center gap-1.5 text-sm text-accent transition-opacity hover:opacity-75"
-          >
-            了解更多
-            <Icon name="arrowRight" size={14} />
-          </a>
-        </section>
-
-        <!-- 文章 -->
-        <section class="animate-fade-up">
-          <h2 class="section-title">
-            <span class="inline-block h-4 w-1 rounded-full bg-accent"></span>
-            文章
-            <a
-              href="/blog"
-              class="ml-auto text-xs font-normal text-fg-subtle transition-colors hover:text-accent"
-            >
-              查看全部 →
-            </a>
-          </h2>
-
-          {
-            latest.length > 0 ? (
-              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {latest.map((post) => (
-                  <PostCard post={post} showExcerpt={false} />
-                ))}
-              </div>
-            ) : (
-              <p class="card p-5 text-sm text-fg-muted">
-                还没有文章。在 <code class="text-accent">src/content/blog/</code> 里新建一个
-                .md 文件就能发布了。
-              </p>
-            )
-          }
-        </section>
-
-        <!-- 经历 -->
-        {
-          SITE.education.length > 0 && (
-            <section class="animate-fade-up">
-              <h2 class="section-title">
-                <span class="inline-block h-4 w-1 rounded-full bg-accent" />
-                经历
-              </h2>
-              <div class="space-y-3">
-                {SITE.education.map((item) => {
-                  const Tag = item.href ? 'a' : 'div';
-                  return (
-                    <Tag
-                      href={item.href || undefined}
-                      target={item.href ? '_blank' : undefined}
-                      rel={item.href ? 'noopener noreferrer' : undefined}
-                      class:list={[
-                        'card block p-4',
-                        item.href && 'card-hover',
-                      ]}
-                    >
-                      <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                        <h3 class="font-semibold text-fg">{item.school}</h3>
-                        <span class="text-xs text-fg-subtle">{item.period}</span>
-                      </div>
-                      <p class="mt-1 text-sm text-fg-muted">{item.degree}</p>
-                    </Tag>
-                  );
-                })}
-              </div>
-            </section>
-          )
-        }
-
-        <!-- 技能 -->
-        {
-          SITE.skills.length > 0 && (
-            <section class="animate-fade-up">
-              <h2 class="section-title">
-                <span class="inline-block h-4 w-1 rounded-full bg-accent" />
-                技能
-              </h2>
-              <div class="grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2">
-                {SITE.skills.map((group) => (
-                  <div>
-                    <h3 class="mb-2.5 text-sm font-semibold text-fg">{group.group}</h3>
-                    <div class="flex flex-wrap gap-1.5">
-                      {group.items.map((item) => (
-                        <span class="chip">{item}</span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )
-        }
+      <div class='flex flex-col items-center gap-y-4'>
+        <h1 class='text-3xl font-medium'>{config.author}</h1>
+        <div class='flex flex-wrap justify-center gap-x-7 gap-y-3'>
+          <Label title='China'>
+            <Icon name='location' class='size-5' slot='icon' />
+          </Label>
+          <Label title='GitHub' as='a' href='https://github.com/Apricity1128' target='_blank'>
+            <Icon name='github' class='size-5' slot='icon' />
+          </Label>
+        </div>
       </div>
+    </section>
+
+    <div id='content' class='animate flex flex-col gap-y-10 md:w-4/5 lg:w-5/6'>
+      <Section title='关于'>
+        <p class='text-muted-foreground mt-1'>开发者 / 终身学习者</p>
+        <div class='flex flex-col gap-2 leading-6 text-muted-foreground'>
+          <p>你好，我叫 Apricity。欢迎来到我的小站。</p>
+          <p>
+            这里用来存放我在学习和折腾过程中留下的东西 —— 技术笔记、读书摘录，以及一些没头没尾的想法。
+          </p>
+          <p>
+            我相信写作是最好的思考方式。把散落各处的笔记整理成文，既能帮自己回顾，也可能恰好帮到屏幕前的你。
+          </p>
+        </div>
+        <Button title='了解更多' class='w-fit self-end' href='/about' style='ahead' />
+      </Section>
+      {
+        allPostsByDate.length > 0 && (
+          <Section title='文章'>
+            <ul class='flex flex-col gap-y-1.5 sm:gap-y-2'>
+              {allPostsByDate.map((p) => (
+                <li class='flex flex-col gap-x-2 sm:flex-row'>
+                  <PostPreview post={p} />
+                </li>
+              ))}
+            </ul>
+            <Button title='全部文章' class='w-fit self-end' href='/blog' variant='ahead' />
+          </Section>
+        )
+      }
+
+      {
+        /* <Section title='Experience'>
+      <Card
+        heading='Lorem Ipsum'
+        subheading='Sit amet consectetur'
+        date='Dec 2022 - Nov 2023'
+        imagePath='/src/assets/about-astro.png'
+        altText='Lorem, ipsum dolor sit'
+        imageClass='h-12 w-auto md:-start-16'
+      >
+        <ul class='ms-4 list-disc text-muted-foreground'>
+          <li>
+            Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore debitis recusandae, ut
+            molestiae laboriosam pariatur!
+
+            <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae, pariatur!</li>
+          </li>
+        </ul>
+      </Card>
+      <Card
+        heading='Lorem Ipsum'
+        subheading='Sit amet consectetur'
+        date='Dec 2022 - Nov 2023'
+        imagePath='/src/assets/about-astro.png'
+        altText='Lorem, ipsum dolor sit'
+        imageClass='h-12 w-auto md:-start-16'
+      />
+    </Section> */
+      }
+      <Section title='教育经历'>
+        <Card
+          heading='你的学校'
+          subheading='你的专业 · 学位'
+          date='2022 - 2026'
+          href='https://example.com/'
+        />
+      </Section>
+
+      <!-- <Section title='Website List'>
+        <div class='grid grid-cols-1 gap-3 sm:grid-cols-2'>
+          <ProjectCard
+            href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+            heading='Lorem ipsum'
+            subheading='Do not go gentle into that good night'
+            imagePath='/src/assets/projects/1.avif'
+          />
+          <ProjectCard
+            href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+            heading='Lorem ipsum'
+            subheading='Old age burn and rave at close of day'
+            imagePath='/src/assets/projects/2.avif'
+          />
+          <ProjectCard
+            href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+            heading='Lorem ipsum'
+            subheading='Rage, rage against the dying of the light'
+            imagePath='/src/assets/projects/3.avif'
+          />
+          <ProjectCard
+            href='/projects'
+            heading='More projects'
+            subheading='Check out more projects'
+            imagePath='/src/assets/projects/4.avif'
+          />
+        </div>
+      </Section> -->
+
+      <!-- <Section title='Certifications'>
+        <Card
+          as='a'
+          heading='Lorem ipsum'
+          subheading='Lorem ipsum dolor sit amet, vidit suscipit at mei. Quem denique mea id. Usu ei regione indoctum dissentiunt, cu meliore fuisset mei, vel quod voluptua ne. Ex dicat impedit mel, at eum oratio possit voluptatum. Dicat ceteros cu vim. Impetus fuisset ullamcorper pri cu, his posse iisque ad, aliquam honestatis usu id.'
+          date='July 2024'
+          href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+        />
+      </Section> -->
+
+      <Section title='技能'>
+        <SkillLayout title='Web' skills={webDevelopment} />
+        <SkillLayout title='Programming' skills={generalProgramming} />
+        <SkillLayout title='Tools' skills={developmentTools} />
+        <SkillLayout title='Other' skills={others} />
+      </Section>
     </div>
-  </div>
-</BaseLayout>
+    <Quote class='mt-12' />
+  </main>
+</PageLayout>

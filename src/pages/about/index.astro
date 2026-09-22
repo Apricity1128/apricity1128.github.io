@@ -1,0 +1,91 @@
+---
+/**
+ * 关于页 /about
+ *
+ * 原仓库这里是作者本人的自我介绍、工具清单、社交账号、教育经历等，已全部替换。
+ * 你可以直接改下面的文字来写自己的介绍。
+ */
+import { Timeline } from 'astro-pure/user'
+import Signature from '@/components/Signature.astro'
+import PageLayout from '@/layouts/CommonPage.astro'
+import config from '@/site-config'
+
+const headings = [
+  { depth: 2, slug: 'about-me', text: '关于我' },
+  { depth: 2, slug: 'about-blog', text: '关于这个站点' },
+  { depth: 2, slug: 'contact', text: '联系我' },
+  { depth: 2, slug: 'timeline', text: '时间线' }
+]
+---
+
+<PageLayout title='关于' {headings}>
+  <h2 id='about-me'>关于我</h2>
+  <p class='text-muted-foreground'>开发者 / 终身学习者</p>
+  <p>你好，我叫 {config.author}。欢迎来到我的小站。</p>
+  <p>
+    这里用来存放我在学习和折腾过程中留下的东西 —— 技术笔记、读书摘录，以及一些没头没尾的想法。
+  </p>
+  <p>
+    我相信写作是最好的思考方式。把散落各处的笔记整理成文，既能帮自己回顾，也可能恰好帮到屏幕前的你。
+  </p>
+
+  <h2 id='about-blog'>关于这个站点</h2>
+  <p>整站是静态生成的，没有任何后端和数据库，托管在 GitHub Pages 上。写一篇新文章只需要往仓库里加一个 Markdown 文件。</p>
+  <p>本站基于以下开源项目构建：</p>
+  <ul>
+    <li>
+      框架：<a href='https://astro.build/' target='_blank'>Astro</a>
+    </li>
+    <li>
+      主题：<a href='https://github.com/cworld1/astro-theme-pure' target='_blank'
+        >Astro Theme Pure</a
+      >
+    </li>
+    <li>
+      样式参考：<a href='https://github.com/zhuozhiyongde/Arthals-Ink' target='_blank'
+        >Arthals-Ink</a
+      >
+    </li>
+    <li>
+      数学公式：<a href='https://katex.org/' target='_blank'>KaTeX</a>
+    </li>
+    <li>
+      站内搜索：<a href='https://pagefind.app/' target='_blank'>Pagefind</a>
+    </li>
+    <li>
+      代码高亮：<a href='https://shiki.style/' target='_blank'>Shiki</a>
+    </li>
+  </ul>
+
+  <h2 id='contact'>联系我</h2>
+  <p>你可以在以下平台找到我：</p>
+  <ul>
+    <li>
+      邮箱：<a href='mailto:hello@example.com'>hello@example.com</a>
+      <span class='text-muted-foreground'>（换成你自己的）</span>
+    </li>
+    <li>
+      GitHub：<a href='https://github.com/Apricity1128' target='_blank'
+        >github.com/Apricity1128</a
+      >
+    </li>
+    <li>
+      RSS：<a href='/rss.xml'>订阅本站</a>
+    </li>
+  </ul>
+  <p class='text-muted-foreground text-sm'>
+    如果你对某篇文章有想法，或者发现了错误，欢迎通过邮件告诉我。
+  </p>
+
+  <h2 id='timeline'>时间线</h2>
+  <Timeline
+    events={[
+      {
+        date: '2026-01-01',
+        content: '开始写这个博客'
+      }
+    ]}
+  />
+
+  <Signature />
+</PageLayout>

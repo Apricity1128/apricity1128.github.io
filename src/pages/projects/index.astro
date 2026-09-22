@@ -1,0 +1,51 @@
+---
+/**
+ * 项目页 /projects
+ *
+ * 原仓库这里列的是作者自己的项目（PKU Art、Treehole Art 等），已全部替换为占位内容。
+ * 你可以照下面的格式换成自己的项目：name / description / links。
+ * links 里的 type 决定图标：github / site / doc / release
+ */
+import PageLayout from '@/layouts/CommonPage.astro'
+import ProjectSection from '@/components/projects/ProjectSection.astro'
+
+const headings = [
+  { depth: 2, slug: 'projects', text: '项目' },
+  { depth: 2, slug: 'learnings', text: '笔记与课程' }
+]
+
+/** 换成你自己的项目即可 */
+const projects = [
+  {
+    name: '个人博客',
+    description: '你正在看的这个网站。基于 Astro Theme Pure 构建，支持深色模式、全文搜索与数学公式，通过 GitHub Actions 自动部署到 GitHub Pages。',
+    links: [
+      { type: 'github', href: 'https://github.com/Apricity1128/apricity1128.github.io' },
+      { type: 'site', href: 'https://apricity1128.github.io' }
+    ]
+  },
+  {
+    name: '示例项目',
+    description: '把 src/pages/projects/index.astro 里的这一项换成你自己的项目。写清楚它解决了什么问题、用了什么技术。',
+    links: [{ type: 'github', href: 'https://github.com/Apricity1128' }]
+  }
+]
+
+const learnings = [
+  {
+    name: 'CCPC 网络赛题解',
+    description: '记录比赛的解题思路，包含中位数计数与范德蒙德卷积的推导过程。',
+    links: [{ type: 'site', href: '/blog/ccpc-online-contest' }]
+  }
+]
+---
+
+<PageLayout title='项目' {headings}>
+  <p>这里放一些我自己做的小东西。多数是自用工具和小实验，代码基本都开源在 GitHub 上。</p>
+
+  <h2 id='projects'>项目</h2>
+  <ProjectSection projects={projects} />
+
+  <h2 id='learnings'>笔记与课程</h2>
+  <ProjectSection projects={learnings} />
+</PageLayout>

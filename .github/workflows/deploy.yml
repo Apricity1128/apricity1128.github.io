@@ -26,8 +26,8 @@ jobs:
         uses: actions/checkout@v7
 
       # withastro/action 会自动识别 package-lock.json 选择 npm，
-      # 依次执行 install → build，并生成 Pagefind 索引（见 src/integrations/pagefind.mjs），
-      # 最后把 dist/ 作为 Pages 产物上传。
+      # 依次执行 npm ci → npm run build，最后把 dist/ 作为 Pages 产物上传。
+      # 站内搜索的 Pagefind 索引由 astro-pure 集成在构建末尾自动生成。
       - name: 安装依赖并构建
         uses: withastro/action@v6
 

@@ -1,0 +1,16 @@
+---
+/**
+ * PageInfo —— 文章/页面标题下的附加信息行
+ *
+ * 原版这里显示 Waline 的访问量和评论数，需要自建 Waline 服务端。
+ * 本项目不使用评论系统，所以这里不渲染任何内容。
+ * 保留这个组件是为了不改动 BlogPost / CommonPage 里的引用。
+ */
+interface Props {
+  view?: boolean
+  comment?: boolean
+  class?: string
+}
+---
+
+<!-- 无评论系统：此处不输出内容 -->

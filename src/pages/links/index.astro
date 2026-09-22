@@ -1,0 +1,86 @@
+---
+import links from '@/public/links.json'
+import config from 'virtual:config'
+
+import { Collapse, Timeline } from 'astro-pure/user'
+import Signature from '@/components/Signature.astro'
+import PageLayout from '@/layouts/CommonPage.astro'
+import FriendList from '@/components/links/FriendList.astro'
+
+const headings = [
+  { depth: 2, slug: 'common-links', text: 'Common Links' },
+  { depth: 2, slug: 'special-links', text: 'Special Links' },
+  { depth: 2, slug: 'apply-links', text: 'Apply Links' },
+  { depth: 2, slug: 'friend-circle', text: 'Friend Circle' }
+]
+
+const { friends } = links
+const linksConf = config.integ.links
+---
+
+<PageLayout title='友链' {headings} comment>
+  <p>以下顺序随机排列。</p>
+  <h2 id='common-links'>常用友链</h2>
+  <FriendList list={friends[0]} />
+  <Collapse title='访问异常'>
+    <FriendList list={friends[1]} />
+  </Collapse>
+  <Collapse title='友链变更记录'>
+    <Timeline events={linksConf.logbook} />
+  </Collapse>
+  <h2 id='special-links'>其他站点</h2>
+  <FriendList list={friends[2]} />
+
+  <h2 id='apply-links'>申请友链</h2>
+  <p>本站信息（点击复制）：</p>
+  <blockquote class='not-prose grid grid-cols-[auto_1fr] gap-x-2 break-words border-s-4 ps-4'>
+    {
+      linksConf.applyTip.map(({ name, val }) => {
+        const script = `navigator.clipboard.writeText('${val}');document.dispatchEvent(new CustomEvent('toast',{detail:{message:'Copied "${val}" to clipboard!'}}))`
+        return (
+          <>
+            <span class='text-end'>{name}:</span>
+            <samp class='cursor-pointer' onclick={script}>
+              {val}
+            </samp>
+          </>
+        )
+      })
+    }
+  </blockquote>
+
+  <p>申请时还请按照这个模板留言，此外有关申请说明：</p>
+  <ul>
+    <li>推荐了本站 You've recommended our link on your website</li>
+    <li>站点活着且有正式域名 Make sure your site is alive with a formal domain</li>
+    <li>
+      至少五篇原创文章且最近一年更新过 At least 5 original articles and exists articles released in
+      recent year
+    </li>
+    <li>内容不违反国家法律 Content does not violate laws</li>
+  </ul>
+  <h2 id='friend-circle'>Friend Circle</h2>
+  <p class='text-muted-foreground'>
+    好友圈需要自己部署一套 Friend-Circle-Lite 后端服务。原仓库这里指向作者自己的服务器
+    （friends.arthals.ink），已移除。想启用的话参考
+    <a href='https://github.com/Rock-Candy-Tea/hexo-circle-of-friends' target='_blank'
+      >Friend-Circle-Lite</a
+    >
+    的说明部署后，把下面的注释打开并填上你的地址。
+  </p>
+  <!--
+  <div id='friend-circle-lite-root' class='not-prose'>Loading...</div>
+  <script>
+    import '@/assets/styles/fc.css'
+    import { FriendCircle } from '@/plugins/friend-circle'
+    const fc = new FriendCircle()
+    fc.init({
+      private_api_url: 'https://你的地址/',
+      page_turning_number: 10,
+      error_img: ''
+    })
+    fc.load()
+  </script>
+  -->
+  <Signature />
+</PageLayout>
