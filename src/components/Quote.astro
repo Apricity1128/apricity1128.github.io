@@ -1,0 +1,72 @@
+---
+/**
+ * Quote —— 页脚的一句话
+ *
+ * 上游实现有两个问题，这里做了修正：
+ *   1. 初始文案是 "Loading..."，请求失败时（比如断网、接口被墙）会永远停在那里
+ *   2. fetch 没有 .catch()，失败后不会有任何反馈
+ *
+ * 改成：默认就显示一句中文兜底，接口成功返回后再替换。
+ * 接口地址在 src/site.config.ts 的 integ.quote 里配置。
+ */
+import { cn } from 'astro-pure/utils'
+
+const { class: className } = Astro.props
+
+/** 接口不可用时的兜底文案 */
+const FALLBACK = '愿你所行皆坦途，所遇皆温柔。'
+---
+
+<quote-component class={cn('not-prose inline-block', className)}>
+  <div class='flex flex-row items-center gap-x-3 rounded-full border px-4 py-2 text-sm shadow-sm'>
+    <span class='relative flex items-center justify-center'>
+      <span
+        class='absolute size-2 animate-ping rounded-full border border-green-400 bg-green-400 opacity-75'
+      ></span>
+      <span class='size-2 rounded-full bg-green-400'></span>
+    </span>
+    <p id='quote-sentence' class='font-medium text-muted-foreground'>{FALLBACK}</p>
+  </div>
+</quote-component>
+
+<script>
+  import config from 'virtual:config'
+
+  const { quote } = config.integ
+
+  class Quote extends HTMLElement {
+    render(sentence: string) {
+      const quoteEl = this.querySelector('#quote-sentence') as HTMLElement
+      if (!quoteEl || !sentence) return
+      quoteEl.innerText = sentence
+    }
+
+    connectedCallback() {
+      // virtual:config 只能传 JSON 字符串，函数没法直接序列化，所以用 new Function 还原
+      let targetFunction: (data: unknown) => string
+      try {
+        targetFunction = new Function('data', `return (${quote.target})(data)`) as (
+          data: unknown
+        ) => string
+      } catch {
+        return // 配置里的函数写错了，保持兜底文案
+      }
+
+      // 加超时，避免接口卡住时一直等
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), 5000)
+
+      fetch(quote.server, { signal: controller.signal })
+        .then((response) => response.json())
+        .then((data) => this.render(targetFunction(data)))
+        .catch(() => {
+          /* 接口不可用就保持兜底文案，不报错 */
+        })
+        .finally(() => clearTimeout(timer))
+    }
+  }
+
+  if (!customElements.get('quote-component')) {
+    customElements.define('quote-component', Quote)
+  }
+</script>
