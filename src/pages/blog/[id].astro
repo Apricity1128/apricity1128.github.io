@@ -53,9 +53,9 @@ const jsonLd = {
   <div class="container-wide pt-10 sm:pt-14">
     <div class="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_14rem] lg:gap-12">
       <!-- ============ 正文 ============ -->
-      <!-- data-pagefind-body：告诉 Pagefind 只把正文当作可检索内容，
-           标题区和目录属于界面元素，不参与索引 -->
-      <article data-pagefind-body class="min-w-0">
+      <!-- data-pagefind-body 统一加在 BaseLayout 的 <main> 上；
+           这里只把标题区、目录、翻页这些界面元素排除在索引之外 -->
+      <article class="min-w-0">
         <!-- 标题区 -->
         <header data-pagefind-ignore class="mb-8 border-b border-border pb-6">
           <h1 class="text-balance text-[1.75rem] font-bold leading-[1.3] tracking-tight text-fg sm:text-[2rem]">

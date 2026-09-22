@@ -16,7 +16,7 @@ const minDepth = visible.length ? Math.min(...visible.map((h) => h.depth)) : 2;
 
 {
   visible.length > 0 && (
-    <nav class="toc text-sm" aria-labelledby="toc-heading">
+    <nav data-pagefind-ignore class="toc text-sm" aria-labelledby="toc-heading">
       <p
         id="toc-heading"
         class="mb-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-fg-subtle"

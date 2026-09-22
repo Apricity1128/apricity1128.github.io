@@ -101,7 +101,14 @@ const ogImage = new URL('/og.png', Astro.site).href;
 
     <Header />
 
-    <main id="main" class={wide ? 'flex-1 pb-20' : 'flex-1 pb-16'}>
+    <!--
+      data-pagefind-body 告诉 Pagefind 只索引这个区域以内的内容。
+      注意 Pagefind 的规则是「只要站内有任何一个页面带了这个标记，其他没带的页面
+      就完全不会被索引」—— 所以它必须放在这里统一加，而不是只加在文章页上，
+      否则首页、关于、项目等页面会从搜索里消失。
+      个别页面想退出索引，在 page 里用 data-pagefind-ignore 标记即可（见 search.astro）。
+    -->
+    <main id="main" data-pagefind-body class={wide ? 'flex-1 pb-20' : 'flex-1 pb-16'}>
       <slot />
     </main>
 
