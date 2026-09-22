@@ -11,23 +11,29 @@ import ProjectSection from '@/components/projects/ProjectSection.astro'
 
 const headings = [
   { depth: 2, slug: 'projects', text: '项目' },
-  { depth: 2, slug: 'learnings', text: '笔记与课程' }
+  { depth: 2, slug: 'contest', text: '命题与竞赛' },
+  { depth: 2, slug: 'learnings', text: '笔记与题解' }
 ]
 
 /** 换成你自己的项目即可 */
 const projects = [
   {
     name: '个人博客',
-    description: '你正在看的这个网站。基于 Astro Theme Pure 构建，支持深色模式、全文搜索与数学公式，通过 GitHub Actions 自动部署到 GitHub Pages。',
+    description:
+      '你正在看的这个网站。基于 Astro Theme Pure 构建，支持深色模式、全文搜索与数学公式，通过 GitHub Actions 自动部署到 GitHub Pages。',
     links: [
       { type: 'github', href: 'https://github.com/Apricity1128/apricity1128.github.io' },
       { type: 'site', href: 'https://apricity1128.github.io' }
     ]
-  },
+  }
+]
+
+/** 命题与竞赛经历 */
+const contests = [
   {
-    name: '示例项目',
-    description: '把 src/pages/projects/index.astro 里的这一项换成你自己的项目。写清楚它解决了什么问题、用了什么技术。',
-    links: [{ type: 'github', href: 'https://github.com/Apricity1128' }]
+    name: '2024 山东省青岛中学生市赛 命题',
+    description:
+      '参与 2024 年山东省青岛市中学生程序设计竞赛的命题工作，负责题目设计与数据构造。'
   }
 ]
 
@@ -46,6 +52,9 @@ const learnings = [
   <h2 id='projects'>项目</h2>
   <ProjectSection projects={projects} />
 
-  <h2 id='learnings'>笔记与课程</h2>
+  <h2 id='contest'>命题与竞赛</h2>
+  <ProjectSection projects={contests} />
+
+  <h2 id='learnings'>笔记与题解</h2>
   <ProjectSection projects={learnings} />
 </PageLayout>

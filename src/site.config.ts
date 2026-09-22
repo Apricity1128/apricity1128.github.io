@@ -7,7 +7,7 @@ export const theme: ThemeUserConfig = {
   /** Will be used in index page & copyright declaration */
   author: 'Apricity',
   /** Description metadata for your website. Can be used in page metadata. */
-  description: '记录思考与生活 —— 技术笔记、读书摘录和一些没头没尾的想法',
+  description: '记录生活中的小幸福',
   /** The default favicon for your site which should be a path to an image in the `public/` directory. */
   favicon: '/favicon/favicon.ico',
   /** The default social card image for your site which should be a path to an image in the `public/` directory. */
@@ -58,7 +58,7 @@ export const theme: ThemeUserConfig = {
     /** Optional details about the social media accounts for this site. */
     social: [
       { icon: 'github', label: 'GitHub', href: 'https://github.com/Apricity1128' },
-      { icon: 'email', label: 'Email', href: 'mailto:hello@example.com' },
+      { icon: 'email', label: 'Email', href: 'mailto:3502075308@qq.com' },
       { icon: 'rss', label: 'RSS', href: '/rss.xml' }
     ]
   },
