@@ -35,3 +35,11 @@ preview.log
 # 研究/临时目录
 research/
 _pagefind_tmp/
+
+# posts/ 只收 Markdown，其他杂物（记事本临时文件等）一律忽略
+posts/*.txt
+posts/*.rtf
+posts/*.docx
+posts/*.bak
+posts/*.tmp
+
