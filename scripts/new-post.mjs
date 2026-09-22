@@ -1,20 +1,26 @@
 #!/usr/bin/env node
 /**
- * 新建文章脚本
+ * 新建文章（可选工具）
  *
+ * 其实你完全可以不跑这个脚本 —— 直接在 posts/ 里新建一个 .md 文件写正文就行，
+ * 标题和日期都会自动推导。这个脚本只是帮你把文件名和日期前缀规范化。
+ *
+ * 用法：
  *   npm run new "文章标题"
- *   npm run new "文章标题" -- --slug my-post --tags Astro,教程
+ *   npm run new "文章标题" -- --tags Astro,教程
+ *   npm run new "文章标题" -- --no-date     # 文件名不带日期前缀
+ *   npm run new "文章标题" -- --date 2026-01-01
  *
- * 会在 src/content/blog/ 下生成一个带好 frontmatter 的 Markdown 文件。
+ * 生成的文件默认带 draft: true，写完把这一行删掉（或改成 false）才会发布。
+ * 如果连 frontmatter 都不想要，把生成的 --- 块整个删掉也完全没问题。
  */
 import { mkdir, writeFile, access } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BLOG_DIR = resolve(__dirname, '../src/content/blog');
+const POSTS_DIR = resolve(__dirname, '../posts');
 
-/** 解析命令行参数 */
 function parseArgs(argv) {
   const positional = [];
   const flags = {};
@@ -38,19 +44,25 @@ function parseArgs(argv) {
   return { positional, flags };
 }
 
-/** 把标题转成适合做文件名的 slug（保留中文，去掉标点） */
+/** 把标题转成安全的文件名片段：去掉不能用于文件名的字符 */
 function slugify(input) {
   return (
     input
       .trim()
-      .toLowerCase()
-      // 去掉文件名不允许的字符
       .replace(/[\\/:*?"<>|]/g, '')
-      // 空白转连字符
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '') || `post-${Date.now()}`
   );
+}
+
+function today() {
+  const now = new Date();
+  return [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0'),
+  ].join('-');
 }
 
 const { positional, flags } = parseArgs(process.argv.slice(2));
@@ -60,55 +72,48 @@ if (!title) {
   console.error(`
 用法：
   npm run new "文章标题"
-  npm run new "文章标题" -- --slug my-post --tags Astro,教程
+  npm run new "文章标题" -- --tags Astro,教程
+  npm run new "文章标题" -- --no-date
 
 可选参数：
-  --slug <文件名>      指定文件名 slug（默认由标题生成）
-  --tags a,b,c         标签，逗号分隔
-  --description <文本>  文章摘要
+  --tags a,b,c      标签，逗号分隔
+  --date YYYY-MM-DD 指定文件名里的日期（默认今天）
+  --no-date         文件名不带日期前缀
+  --no-frontmatter  完全不生成 frontmatter，只留正文
 `);
   process.exit(1);
 }
 
-const slug = flags.slug ? slugify(String(flags.slug)) : slugify(title);
+const date = typeof flags.date === 'string' ? flags.date : today();
+const stem = flags['no-date'] ? slugify(title) : `${date}-${slugify(title)}`;
 const tags = flags.tags
   ? String(flags.tags)
       .split(',')
       .map((t) => t.trim())
       .filter(Boolean)
   : [];
-const description = flags.description ? String(flags.description) : '';
 
-// 用本地日期，避免时区问题
-const now = new Date();
-const date = [
-  now.getFullYear(),
-  String(now.getMonth() + 1).padStart(2, '0'),
-  String(now.getDate()).padStart(2, '0'),
-].join('-');
+const filePath = join(POSTS_DIR, `${stem}.md`);
 
-const filePath = join(BLOG_DIR, `${slug}.md`);
-
-// 已存在就不覆盖
 try {
   await access(filePath);
-  console.error(`文件已存在，未覆盖：${filePath}`);
+  console.error(`文件已存在，未覆盖：posts/${stem}.md`);
   process.exit(1);
 } catch {
-  /* 不存在，可以继续 */
+  /* 不存在，继续 */
 }
 
-const tagsLine = tags.length > 0 ? `\ntags: [${tags.map((t) => `"${t}"`).join(', ')}]` : '\ntags: []';
-
-const content = `---
-title: "${title.replace(/"/g, '\\"')}"
-description: "${description}"
-pubDate: ${date}${tagsLine}
-draft: true
-pinned: false
+const frontmatter = flags['no-frontmatter']
+  ? ''
+  : `---
+${tags.length ? `tags: [${tags.map((t) => `"${t}"`).join(', ')}]\n` : ''}draft: true
 ---
 
-在这里写正文。
+`;
+
+const content = `${frontmatter}# ${title}
+
+在这里写正文。除了这一行标题，其他什么都不用管 —— 日期会自动取文件名或 git 提交时间。
 
 ## 第一节
 
@@ -118,21 +123,30 @@ pinned: false
 - \`行内代码\`
 - [链接](https://astro.build)
 
-\`\`\`ts
-// 代码块会自动高亮，并带上复制按钮
-const hello = (name: string) => \`Hello, \${name}!\`;
+\`\`\`js
+// 代码块会自动高亮，并带上语言标签和复制按钮
+const hello = (name) => \`Hello, \${name}!\`;
 \`\`\`
 
 > 引用块也可以。
 
-写完之后把 frontmatter 里的 \`draft: true\` 改成 \`false\`（或者删掉这一行），
-文章就会出现在列表里了。
+写完之后，把 frontmatter 里的 \`draft: true\` 删掉（或者改成 \`false\`），
+提交推送，网站就会自动更新。
 `;
 
-await mkdir(BLOG_DIR, { recursive: true });
+await mkdir(POSTS_DIR, { recursive: true });
 await writeFile(filePath, content, 'utf8');
 
-console.log(`✅ 已创建：src/content/blog/${slug}.md`);
-console.log(`   标题：${title}`);
+const hasFrontmatter = !flags['no-frontmatter'];
+const slug = slugify(title);
+
+console.log(`✅ 已创建：posts/${stem}.md`);
+console.log(`   标题：${title}（将取自正文第一个 # 标题）`);
+console.log(`   访问路径：/blog/${slug}/`);
 if (tags.length > 0) console.log(`   标签：${tags.join(', ')}`);
-console.log(`\n提示：目前 draft: true，写完后改成 false 才会发布。`);
+
+if (hasFrontmatter) {
+  console.log('\n提示：目前是草稿，写完后删掉 draft: true 这一行即可发布。');
+} else {
+  console.log('\n这个文件没有任何 frontmatter，提交推送后就会直接发布。');
+}

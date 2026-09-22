@@ -10,11 +10,12 @@
 
 | 功能 | 实现 |
 | --- | --- |
+| 丢 md 就发布 | 标题/日期/摘要/URL 全自动推导，零配置（见 `src/loaders/posts-loader.mjs`） |
 | 深色 / 浅色主题 | CSS 变量 + `.dark` 类，首屏内联脚本防白闪，跟随系统偏好 |
 | 站内全文搜索 | [Pagefind](https://pagefind.app)，构建期生成索引，纯静态无需服务端 |
 | 文章目录（TOC） | 从 Markdown 标题自动提取，滚动时高亮当前小节 |
 | 代码高亮 | Shiki 双主题，浅色/深色各一套配色，带语言标签和复制按钮 |
-| 标签分类 | frontmatter 里的 `tags`，自动生成标签页 |
+| 标签分类 | `tags` 字段，自动生成标签页 |
 | RSS 订阅 | `/rss.xml` |
 | 站点地图 | `/sitemap-index.xml` |
 | 自动部署 | GitHub Actions，推送即发布 |
@@ -47,35 +48,81 @@ npm run check    # Astro 类型检查
 
 ## 写一篇新文章
 
-**方式一：用脚本生成（推荐）**
+**最省事的方式：直接丢一个 `.md` 文件进 `posts/` 文件夹，只写正文就行。**
+
+标题、日期、摘要、URL 全部自动推导，不需要写任何配置：
 
 ```bash
-npm run new "文章标题"
-npm run new "文章标题" -- --tags Astro,教程 --description "一句话摘要"
+posts/2026-02-05-我的第一篇文章.md
 ```
 
-会在 `src/content/blog/` 下生成一个带好 frontmatter 的 `.md` 文件，
-默认 `draft: true`，写完把这一行改成 `false`（或删掉）就会发布。
+```markdown
+# 我的第一篇文章
 
-**方式二：手动新建**
+正文随便写。标题取自这一行，日期取自文件名，URL 变成 /blog/我的第一篇文章/。
+```
 
-在 `src/content/blog/` 里新建 `my-post.md`：
+提交推送，网站自动更新。就这样。
+
+### 三种写法，挑一种顺手的
+
+| 写法 | 文件名 | 日期来自 | 说明 |
+| --- | --- | --- | --- |
+| 带日期（推荐） | `2026-02-05-标题.md` | 文件名 | 最稳，日期由你完全掌控 |
+| 不带日期 | `标题.md` | git 首次提交时间 | 省事，日期自动记录 |
+| 完整配置 | 任意 | frontmatter | 需要标签、置顶、摘要时用 |
+
+### 各字段的自动推导规则
+
+**全都可以不写**，需要覆盖时才写 frontmatter：
+
+| 字段 | 自动来源（按优先级） |
+| --- | --- |
+| `title` | frontmatter → 正文第一个 `#` 标题 → 文件名 |
+| `pubDate` | frontmatter → 文件名里的日期 → git 提交时间 → 文件修改时间 |
+| `updatedDate` | frontmatter → git 最近一次提交时间 |
+| `description` | frontmatter → 正文前 160 字 |
+| URL | frontmatter 的 `slug` → 文件名（自动去掉日期前缀） |
+| `tags` | 只能手写，支持 `tags: [a, b]` 或 `tags: a, b` |
+
+> **关于日期为什么用 git 提交时间**：如果用文件系统修改时间，CI 每次全新检出后
+> 所有文件的 mtime 都会变成构建那一刻，老文章的日期会全部漂移到部署当天。
+> git 提交时间存在 git 对象里，换机器、重新克隆都不会变，所以是稳定的。
+> 这也是推荐在文件名里写日期的原因 —— 最直观，且完全不依赖 git。
+
+### 需要标签、置顶时
+
+文件名 `posts/2026-02-05-我的文章.md`，内容：
 
 ```markdown
 ---
-title: "文章标题"
-description: "摘要，显示在列表页和搜索引擎结果里"
-pubDate: 2026-02-08
-updatedDate: 2026-02-10   # 可选
-tags: ["Astro", "教程"]
-draft: false              # true 则不发布
-pinned: false             # true 则置顶
+tags: [Astro, 教程]
+pinned: true
+draft: false
+description: 这句会覆盖自动提取的摘要
 ---
 
-正文从这里开始，用 Markdown 写。
+# 我的文章
+
+正文……
 ```
 
-文件名（不含 `.md`）就是文章的 URL：`my-post.md` → `/blog/my-post/`。
+`draft: true` 时文章不会出现在任何列表和构建产物里。
+
+### 用脚本生成（可选）
+
+```bash
+npm run new "文章标题"
+npm run new "文章标题" -- --tags Astro,教程
+npm run new "文章标题" -- --no-date          # 文件名不带日期
+npm run new "文章标题" -- --no-frontmatter   # 完全不要 frontmatter
+```
+
+### 在 GitHub 网页上写
+
+不用装任何东西：仓库里进 `posts/` → **Add file** → **Create new file** →
+文件名写 `2026-02-05-标题.md` → 粘贴正文 → **Commit changes**。
+一分钟左右网站就会更新。
 
 ---
 
@@ -99,19 +146,23 @@ pinned: false             # true 则置顶
 
 ```
 .
+├── posts/                         # ⬅ 文章都在这里，丢 md 进来就发布
+│   ├── 2026-02-05-hello-world.md
+│   └── 2026-02-08-markdown-guide.md
 ├── .github/workflows/deploy.yml   # GitHub Actions 自动部署
 ├── public/                        # 静态资源，原样复制到 dist/
 │   ├── avatar.svg                 # 头像
-│   └── favicon.svg                # 站点图标
+│   ├── favicon.svg                # 站点图标
+│   └── images/                    # 文章里引用的图片放这里
 ├── scripts/
-│   ├── new-post.mjs               # npm run new 的实现
+│   ├── new-post.mjs               # npm run new 的实现（可选工具）
 │   └── dev/                       # 本地视觉验证辅助脚本（不提交）
 ├── src/
 │   ├── components/                # Header / Footer / PostCard / TOC / Icon …
-│   ├── content/blog/              # ⬅ 文章 Markdown 都在这里
 │   ├── data/                      # 站点配置、项目、友链（纯数据）
 │   ├── integrations/pagefind.mjs  # 构建后自动生成搜索索引
 │   ├── layouts/BaseLayout.astro   # 全站 HTML 骨架
+│   ├── loaders/posts-loader.mjs   # ⬅ 自动推导标题/日期/摘要的核心逻辑
 │   ├── pages/                     # 路由（文件路径 = URL）
 │   │   ├── index.astro            # /
 │   │   ├── blog/index.astro       # /blog
@@ -125,9 +176,11 @@ pinned: false             # true 则置顶
 │   │   └── rss.xml.js             # /rss.xml
 │   ├── styles/global.css          # 设计令牌 + 排版 + 组件样式
 │   ├── utils/posts.js             # 读取/排序/格式化文章的工具函数
-│   └── content.config.ts          # 文章 frontmatter 的字段校验
+│   └── content.config.ts          # 文章字段定义（全部有默认值）
 └── astro.config.mjs               # Astro 配置
 ```
+
+> 文章目录在项目根目录的 `posts/`，不在 `src/` 里面 —— 这样打开项目第一眼就能看到它。
 
 ---
 
@@ -151,6 +204,15 @@ push → 安装依赖 → astro build（含 Pagefind 索引）→ 上传 dist/ �
 
 几个容易踩坑、已在代码里注释的点：
 
+- **文章日期用 git 提交时间而非文件系统 mtime**：CI 每次全新 checkout 后
+  所有文件的 mtime 都会变成构建那一刻，如果用 mtime，老文章的日期会集体漂移到
+  部署当天。git 提交时间存在 git 对象里，重新克隆也不变。只有在没有 `.git`、
+  或文件还没提交时，才回退到 mtime。
+- **`posts/` 放在项目根目录而不是 `src/content/`**：加载器是自己写的
+  （`src/loaders/posts-loader.mjs`），不依赖 Astro 的 `src/content` 约定，
+  所以目录位置可以自由放，挑一个打开项目就能看见的位置。
+- **frontmatter 解析失败要报错而不是静默忽略**：YAML 写错时如果静默当成无
+  frontmatter，作者会以为标签丢了却找不到原因，所以加载器会直接抛出带说明的错误。
 - **Astro 7 的 Markdown 处理器**默认是 Sätteri，内置 GFM 和智能标点，
   旧的 `remarkRehype` / `smartypants` 配置已不再支持。
 - **Pagefind 必须构建后才能用**，所以集成挂在 `astro:build:done` 钩子上，

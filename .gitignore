@@ -25,6 +25,13 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# 开发过程中的临时文件（脚本输出的日志、调试脚本等）
+# 以 _ 开头的文件/目录一律不入库，避免误提交构建日志
+_*
+_build.log
+build.log
+preview.log
+
 # 研究/临时目录
 research/
 _pagefind_tmp/

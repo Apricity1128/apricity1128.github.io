@@ -16,7 +16,9 @@
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.4",
     "astro": "^7.3.3",
-    "pagefind": "^1.5.2"
+    "js-yaml": "^5.4.2",
+    "pagefind": "^1.5.2",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
