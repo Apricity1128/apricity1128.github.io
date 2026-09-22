@@ -1,0 +1,125 @@
+---
+/**
+ * Header —— 顶部固定导航栏
+ *
+ * 左侧站名，中间导航，右侧搜索 + 主题切换。
+ * 滚动时加毛玻璃背景和细边框。
+ */
+import Icon from './Icon.astro';
+import { SITE } from '../data/site.mjs';
+
+const path = Astro.url.pathname;
+
+/** 判断某个导航项是否处于激活状态（含子路径） */
+function isActive(href) {
+  if (href === '/') return path === '/';
+  return path === href || path.startsWith(`${href}/`);
+}
+---
+
+<header
+  id="site-header"
+  data-pagefind-ignore
+  class="sticky top-0 z-40 border-b border-transparent bg-bg/80 backdrop-blur-md transition-colors duration-200"
+>
+  <div class="container-wide flex h-14 items-center justify-between gap-4">
+    <!-- 站名 -->
+    <a
+      href="/"
+      class="flex items-center gap-2 text-[0.95rem] font-semibold tracking-tight text-fg transition-opacity hover:opacity-70"
+    >
+      <span
+        class="inline-block h-2 w-2 rounded-full bg-accent"
+        style="box-shadow: 0 0 10px var(--accent)"></span>
+      <span>{SITE.title}</span>
+    </a>
+
+    <!-- 导航 -->
+    <nav class="flex items-center gap-0.5 sm:gap-1" aria-label="主导航">
+      {
+        SITE.nav.map((item) => (
+          <a
+            href={item.href}
+            aria-current={isActive(item.href) ? 'page' : undefined}
+            class:list={[
+              'rounded-lg px-2.5 py-1.5 text-sm transition-colors',
+              isActive(item.href)
+                ? 'bg-bg-muted font-medium text-fg'
+                : 'text-fg-muted hover:bg-bg-subtle hover:text-fg',
+            ]}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <!-- 操作区 -->
+    <div class="flex items-center gap-1">
+      <a
+        href="/search"
+        aria-label="搜索"
+        title="搜索 (Ctrl+K)"
+        class="flex h-8 w-8 items-center justify-center rounded-lg text-fg-muted transition-colors hover:bg-bg-subtle hover:text-fg"
+      >
+        <Icon name="search" size={16} />
+      </a>
+
+      <button
+        id="theme-toggle"
+        type="button"
+        aria-label="切换深色/浅色主题"
+        title="切换主题"
+        class="flex h-8 w-8 items-center justify-center rounded-lg text-fg-muted transition-colors hover:bg-bg-subtle hover:text-fg"
+      >
+        <span class="dark:hidden"><Icon name="moon" size={16} /></span>
+        <span class="hidden dark:block"><Icon name="sun" size={16} /></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<script>
+  // ---- 主题切换 ----
+  const toggle = document.getElementById('theme-toggle');
+  toggle?.addEventListener('click', () => {
+    const root = document.documentElement;
+    const next = root.classList.contains('dark') ? 'light' : 'dark';
+    root.classList.toggle('dark', next === 'dark');
+    try {
+      localStorage.setItem('theme', next);
+    } catch {
+      /* 忽略隐私模式下的写入失败 */
+    }
+  });
+
+  // ---- 跟随系统主题变化（用户没有手动选择过时） ----
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  mq.addEventListener('change', (e) => {
+    try {
+      if (localStorage.getItem('theme')) return;
+    } catch {
+      /* 读不到就当作没设置过 */
+    }
+    document.documentElement.classList.toggle('dark', e.matches);
+  });
+
+  // ---- 滚动时显示边框 ----
+  const header = document.getElementById('site-header');
+  const onScroll = () => {
+    if (!header) return;
+    const scrolled = window.scrollY > 8;
+    header.classList.toggle('border-border', scrolled);
+    header.classList.toggle('bg-bg/80', scrolled);
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  // ---- Ctrl/Cmd + K 跳到搜索 ----
+  window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      window.location.href = '/search';
+    }
+  });
+</script>

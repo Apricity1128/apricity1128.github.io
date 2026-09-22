@@ -1,0 +1,210 @@
+---
+/**
+ * 站内搜索 /search
+ *
+ * 用 Pagefind 做纯静态全文搜索：构建时由 src/integrations/pagefind.mjs 生成索引，
+ * 这里在浏览器端按需加载。
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+---
+
+<BaseLayout title="搜索" description="搜索站内所有文章">
+  <div class="container-page pt-10 sm:pt-14">
+    <header class="mb-6">
+      <h1 class="text-2xl font-bold tracking-tight text-fg">搜索</h1>
+      <p class="mt-1.5 text-sm text-fg-muted">
+        输入关键词搜索全站文章
+        <kbd
+          class="ml-1.5 rounded border border-border bg-bg-muted px-1.5 py-0.5 font-mono text-[0.7rem] text-fg-subtle"
+        >
+          Ctrl K
+        </kbd>
+      </p>
+    </header>
+
+    <!-- 搜索框 -->
+    <div class="relative mb-8">
+      <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-fg-subtle">
+        <Icon name="search" size={17} />
+      </span>
+      <input
+        id="search-input"
+        type="search"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="搜索文章标题和内容…"
+        aria-label="搜索"
+        class="w-full rounded-xl border border-border bg-bg-subtle py-3 pl-11 pr-4 text-[0.95rem] text-fg outline-none transition-colors placeholder:text-fg-subtle focus:border-accent/60 focus:bg-bg"
+      />
+    </div>
+
+    <!-- 结果状态 -->
+    <p id="search-status" class="mb-4 text-sm text-fg-subtle" aria-live="polite"></p>
+
+    <!-- 结果列表 -->
+    <div id="search-results" class="space-y-3"></div>
+
+    <!-- 空状态提示（未开始搜索时显示） -->
+    <div id="search-hint" class="text-sm text-fg-muted">
+      <p>试试搜索「Astro」「Markdown」或任意你记得的词。</p>
+      <p class="mt-3 text-fg-subtle">
+        搜索索引在构建时生成，所以本地
+        <code class="text-accent">npm run dev</code>
+        开发模式下搜索不可用，需要用
+        <code class="text-accent">npm run build &amp;&amp; npm run preview</code>
+        预览。
+      </p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const input = document.getElementById('search-input');
+  const results = document.getElementById('search-results');
+  const status = document.getElementById('search-status');
+  const hint = document.getElementById('search-hint');
+
+  /** Pagefind 索引路径（由 src/integrations/pagefind.mjs 生成到 dist/pagefind/） */
+  const PAGEFIND_PATH = '/pagefind/pagefind.js';
+
+  let pagefind = null;
+  let loadError = null;
+
+  /**
+   * 动态加载构建期才生成的 Pagefind 模块。
+   *
+   * 为什么不直接 `import('/pagefind/pagefind.js')`：
+   * Vite 会把任何动态 import 改写成带 __VITE_PRELOAD__ 的形式，而 Astro 的内联
+   * 脚本运行时并没有这个全局变量，运行时会抛 ReferenceError。把路径存进变量、
+   * 加 @vite-ignore、甚至塞进 Blob 模块，都仍会被改写。
+   *
+   * 所以这里用 new Function 在运行时拼出 import 表达式 —— 打包器看不到字面量
+   * import，自然无从改写；浏览器按原生 ESM 加载，相对路径相对当前页面解析。
+   */
+  const dynamicImport = new Function('specifier', 'return import(specifier)');
+
+  async function loadPagefind() {
+    if (pagefind) return pagefind;
+    if (loadError) return null;
+
+    try {
+      const mod = await dynamicImport(PAGEFIND_PATH);
+      await mod.options({ excerptLength: 30 });
+      await mod.init();
+      pagefind = mod;
+      return pagefind;
+    } catch (error) {
+      loadError = error;
+      console.warn('[search] Pagefind 索引加载失败：', error);
+      return null;
+    }
+  }
+
+  function escapeHtml(str) {
+    return String(str ?? '').replace(
+      /[&<>"']/g,
+      (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]
+    );
+  }
+
+  /**
+   * 把 Pagefind 的结果整理成渲染需要的最小结构。
+   *
+   * data() 返回的字段（v1.5）：
+   *   url / raw_url / content / word_count / filters / meta / anchors /
+   *   weighted_locations / locations / raw_content / excerpt / plain_excerpt / sub_results
+   *
+   * 注意：
+   *   · 标题在 meta.title 里，不一定存在（比如标签页可能没有），要兜底
+   *   · excerpt 含 <mark> 高亮标签，plain_excerpt 是纯文本。
+   *     这里用 plain_excerpt 并整体转义，避免把索引里的 HTML 直接注入页面。
+   */
+  function normalizeResult(data) {
+    return {
+      url: data.url ?? data.raw_url ?? '#',
+      title: data.meta?.title?.trim() || data.url || '未命名页面',
+      excerpt: data.plain_excerpt ?? data.excerpt ?? '',
+    };
+  }
+
+  function renderResults(items, term) {
+    if (items.length === 0) {
+      results.innerHTML = '';
+      status.textContent = `没有找到与「${term}」相关的内容`;
+      return;
+    }
+
+    status.textContent = `找到 ${items.length} 条结果`;
+
+    results.innerHTML = items
+      .map(
+        (item) => `
+        <a href="${escapeHtml(item.url)}" class="card card-hover group block p-4">
+          <h3 class="text-[0.95rem] font-semibold text-fg transition-colors group-hover:text-accent">
+            ${escapeHtml(item.title)}
+          </h3>
+          <p class="mt-1.5 text-sm leading-relaxed text-fg-muted">${escapeHtml(item.excerpt)}</p>
+          <p class="mt-2 truncate font-mono text-xs text-fg-subtle">${escapeHtml(item.url)}</p>
+        </a>`
+      )
+      .join('');
+  }
+
+  let debounceTimer;
+  let searchId = 0;
+
+  async function runSearch(term) {
+    const query = term.trim();
+
+    if (!query) {
+      results.innerHTML = '';
+      status.textContent = '';
+      if (hint) hint.hidden = false;
+      return;
+    }
+
+    if (hint) hint.hidden = true;
+
+    const pf = await loadPagefind();
+
+    if (!pf) {
+      status.textContent = '';
+      results.innerHTML = `
+        <div class="card p-5 text-sm text-fg-muted">
+          <p class="font-medium text-fg">搜索索引尚未生成</p>
+          <p class="mt-2">
+            请先运行 <code class="text-accent">npm run build</code>，再用
+            <code class="text-accent">npm run preview</code> 查看效果。
+            Pagefind 只能在构建产物上工作。
+          </p>
+        </div>`;
+      return;
+    }
+
+    const id = ++searchId;
+    const search = await pf.search(query);
+    const raw = await Promise.all(search.results.slice(0, 20).map((r) => r.data()));
+
+    // 请求期间用户又输入了新内容，丢弃这次结果
+    if (id !== searchId) return;
+
+    renderResults(raw.map(normalizeResult), query);
+  }
+
+  input?.addEventListener('input', (e) => {
+    const value = e.target.value;
+    clearTimeout(debounceTimer);
+    debounceTimer = window.setTimeout(() => runSearch(value), 180);
+  });
+
+  // 支持 ?q=xxx 直接带参数进入
+  const initial = new URLSearchParams(window.location.search).get('q');
+  if (initial && input) {
+    input.value = initial;
+    runSearch(initial);
+  }
+
+  // 进入页面自动聚焦
+  if (!initial) input?.focus();
+</script>

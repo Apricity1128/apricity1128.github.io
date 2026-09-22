@@ -1,0 +1,85 @@
+---
+/**
+ * 友链页 /links
+ *
+ * 想加友链：在 src/data/links.json 里加一项即可。
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import linksData from '../data/links.json';
+
+const friends = linksData.friends ?? [];
+---
+
+<BaseLayout title="友链" description="朋友们的小站">
+  <div class="container-page pt-10 sm:pt-14">
+    <header class="mb-8">
+      <h1 class="text-2xl font-bold tracking-tight text-fg">友链</h1>
+      <p class="mt-1.5 text-sm leading-relaxed text-fg-muted">{linksData.intro}</p>
+    </header>
+
+    {
+      friends.length > 0 ? (
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {friends.map((friend) => (
+            <a
+              href={friend.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="card card-hover group flex items-start gap-3.5 p-4"
+            >
+              {friend.avatar ? (
+                <img
+                  src={friend.avatar}
+                  alt=""
+                  width="40"
+                  height="40"
+                  loading="lazy"
+                  class="h-10 w-10 shrink-0 rounded-full border border-border bg-bg-muted object-cover"
+                />
+              ) : (
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-bg-muted text-fg-subtle">
+                  <Icon name="link" size={16} />
+                </span>
+              )}
+
+              <span class="min-w-0">
+                <span class="flex items-center gap-1.5">
+                  <span class="truncate font-medium text-fg transition-colors group-hover:text-accent">
+                    {friend.name}
+                  </span>
+                  <Icon name="external" size={12} class="shrink-0 text-fg-subtle" />
+                </span>
+                <span class="mt-1 line-clamp-2 block text-sm leading-relaxed text-fg-muted">
+                  {friend.description}
+                </span>
+              </span>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="card p-6 text-sm text-fg-muted">
+          <p>还没有添加友链。</p>
+          <p class="mt-2 text-fg-subtle">
+            在 <code class="text-accent">src/data/links.json</code> 的
+            <code class="text-accent">friends</code> 数组里加一项就能显示在这里。
+          </p>
+        </div>
+      )
+    }
+
+    <!-- 申请友链 -->
+    <section class="card mt-8 p-5">
+      <h2 class="text-sm font-semibold text-fg">想交换友链？</h2>
+      <p class="mt-2 text-sm leading-relaxed text-fg-muted">
+        欢迎通过首页的邮箱联系我，附上你的站点名称、链接和一句简介。
+        内容长期更新的独立博客都可以。
+      </p>
+      <pre
+        class="mt-4 overflow-x-auto rounded-lg border border-border bg-bg-muted p-3.5 font-mono text-xs leading-relaxed text-fg-muted">{`名称：你的站点
+链接：https://example.com
+头像：https://example.com/avatar.png
+简介：一句话介绍你的站点`}</pre>
+    </section>
+  </div>
+</BaseLayout>

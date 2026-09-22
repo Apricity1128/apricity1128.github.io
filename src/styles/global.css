@@ -1,0 +1,541 @@
+@import 'tailwindcss';
+
+/* ==========================================================================
+   深色模式
+   用 .dark 类控制，配合 <html> 上的内联脚本避免首屏白闪。
+   ========================================================================== */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ==========================================================================
+   设计令牌
+   配色走「中性灰 + 单一强调色」的极简路线，和参考站 arthals.ink 一致。
+   调整主题色只需要改这一块。
+   ========================================================================== */
+@theme {
+  /* 品牌强调色：默认琥珀/杏色，贴合 "Apricity"（冬日暖阳）的意思 */
+  --color-accent-50: oklch(0.97 0.02 75);
+  --color-accent-100: oklch(0.94 0.04 75);
+  --color-accent-200: oklch(0.89 0.07 75);
+  --color-accent-300: oklch(0.82 0.11 70);
+  --color-accent-400: oklch(0.75 0.14 65);
+  --color-accent-500: oklch(0.68 0.16 60);
+  --color-accent-600: oklch(0.60 0.15 55);
+  --color-accent-700: oklch(0.50 0.13 50);
+  --color-accent-800: oklch(0.41 0.10 50);
+  --color-accent-900: oklch(0.34 0.08 50);
+
+  /* 正文字体栈：优先系统字体，中文回退到苹方/微软雅黑 */
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+
+  --radius-card: 0.875rem;
+}
+
+/* ==========================================================================
+   语义化颜色变量
+   浅色 / 深色两套值，用 @layer base 里的 :root 与 .dark 覆盖。
+   ========================================================================== */
+@layer base {
+  :root {
+    --bg: oklch(0.99 0.002 90);
+    --bg-subtle: oklch(0.97 0.003 90);
+    --bg-muted: oklch(0.955 0.004 90);
+    --fg: oklch(0.22 0.005 90);
+    --fg-muted: oklch(0.52 0.005 90);
+    --fg-subtle: oklch(0.66 0.005 90);
+    --border: oklch(0.91 0.004 90);
+    --border-strong: oklch(0.85 0.005 90);
+    --accent: oklch(0.60 0.15 55);
+    --accent-fg: oklch(0.99 0.002 90);
+    --shadow: 0 1px 2px oklch(0.22 0.005 90 / 0.04),
+      0 4px 12px oklch(0.22 0.005 90 / 0.05);
+    color-scheme: light;
+  }
+
+  .dark {
+    --bg: oklch(0.165 0.004 260);
+    --bg-subtle: oklch(0.196 0.005 260);
+    --bg-muted: oklch(0.235 0.006 260);
+    --fg: oklch(0.93 0.004 260);
+    --fg-muted: oklch(0.70 0.006 260);
+    --fg-subtle: oklch(0.56 0.006 260);
+    --border: oklch(0.28 0.006 260);
+    --border-strong: oklch(0.36 0.008 260);
+    --accent: oklch(0.76 0.13 65);
+    --accent-fg: oklch(0.165 0.004 260);
+    --shadow: 0 1px 2px oklch(0 0 0 / 0.25), 0 4px 16px oklch(0 0 0 / 0.3);
+    color-scheme: dark;
+  }
+
+  /* 把语义变量接到 Tailwind 主题上，于是有了 bg-bg / text-fg / border-border 这类工具类 */
+  @theme inline {
+    --color-bg: var(--bg);
+    --color-bg-subtle: var(--bg-subtle);
+    --color-bg-muted: var(--bg-muted);
+    --color-fg: var(--fg);
+    --color-fg-muted: var(--fg-muted);
+    --color-fg-subtle: var(--fg-subtle);
+    --color-border: var(--border);
+    --color-border-strong: var(--border-strong);
+    --color-accent: var(--accent);
+    --color-accent-fg: var(--accent-fg);
+  }
+}
+
+/* ==========================================================================
+   基础排版
+   ========================================================================== */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* 锚点跳转时给固定导航栏留出空间 */
+    scroll-padding-top: 5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklch, var(--accent) 28%, transparent);
+  }
+
+  /* 焦点可见性：只用键盘操作时显示描边 */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* 滚动条 */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--border-strong);
+    border-radius: 999px;
+    border: 3px solid var(--bg);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--fg-subtle);
+  }
+}
+
+/* ==========================================================================
+   组件样式
+   ========================================================================== */
+@layer components {
+  /* 页面主容器：固定最大宽度并居中 */
+  .container-page {
+    width: 100%;
+    max-width: 46rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  .container-wide {
+    width: 100%;
+    max-width: 60rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  /* 卡片 */
+  .card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background-color: var(--bg-subtle);
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .card-hover:hover {
+    border-color: var(--border-strong);
+    background-color: var(--bg-muted);
+    transform: translateY(-2px);
+  }
+
+  /* 小标签胶囊 */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--fg-muted);
+    background-color: var(--bg-muted);
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+
+  a.chip:hover {
+    color: var(--accent);
+    border-color: color-mix(in oklch, var(--accent) 40%, transparent);
+  }
+
+  /* 区块标题 */
+  .section-title {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  /* 首页/列表页的标题下划线装饰 */
+  .link-underline {
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklch, var(--accent) 55%, transparent);
+    text-underline-offset: 3px;
+    text-decoration-thickness: 2px;
+    transition: text-decoration-color 0.2s ease;
+  }
+  .link-underline:hover {
+    text-decoration-color: var(--accent);
+  }
+}
+
+/* ==========================================================================
+   文章正文排版（自己实现，不依赖 typography 插件）
+   ========================================================================== */
+@layer components {
+  .prose-blog {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--fg);
+    word-wrap: break-word;
+  }
+
+  .prose-blog > * + * {
+    margin-top: 1.15em;
+  }
+
+  .prose-blog h2,
+  .prose-blog h3,
+  .prose-blog h4 {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.35;
+    scroll-margin-top: 5rem;
+  }
+
+  .prose-blog h2 {
+    font-size: 1.4em;
+    margin-top: 2.2em;
+    margin-bottom: 0.8em;
+    padding-bottom: 0.35em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .prose-blog h3 {
+    font-size: 1.18em;
+    margin-top: 1.8em;
+    margin-bottom: 0.6em;
+  }
+
+  .prose-blog h4 {
+    font-size: 1.05em;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+  }
+
+  /* 标题锚点：hover 时出现 # */
+  .prose-blog .heading-anchor {
+    color: var(--fg-subtle);
+    text-decoration: none;
+    margin-left: 0.4em;
+    opacity: 0;
+    transition: opacity 0.15s ease, color 0.15s ease;
+    font-weight: 400;
+  }
+
+  .prose-blog h2:hover .heading-anchor,
+  .prose-blog h3:hover .heading-anchor,
+  .prose-blog h4:hover .heading-anchor {
+    opacity: 1;
+  }
+
+  .prose-blog .heading-anchor:hover {
+    color: var(--accent);
+  }
+
+  .prose-blog a:not(.heading-anchor) {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+    text-decoration-color: color-mix(in oklch, var(--accent) 45%, transparent);
+    transition: text-decoration-color 0.2s ease;
+  }
+
+  .prose-blog a:not(.heading-anchor):hover {
+    text-decoration-color: var(--accent);
+  }
+
+  .prose-blog strong {
+    font-weight: 600;
+    color: var(--fg);
+  }
+
+  .prose-blog ul,
+  .prose-blog ol {
+    padding-left: 1.5em;
+  }
+
+  .prose-blog ul {
+    list-style: disc;
+  }
+
+  .prose-blog ol {
+    list-style: decimal;
+  }
+
+  .prose-blog li::marker {
+    color: var(--fg-subtle);
+  }
+
+  .prose-blog li + li {
+    margin-top: 0.4em;
+  }
+
+  .prose-blog li > ul,
+  .prose-blog li > ol {
+    margin-top: 0.4em;
+  }
+
+  .prose-blog blockquote {
+    border-left: 3px solid color-mix(in oklch, var(--accent) 60%, transparent);
+    padding: 0.1em 0 0.1em 1.1em;
+    color: var(--fg-muted);
+    font-style: normal;
+  }
+
+  .prose-blog blockquote p + p {
+    margin-top: 0.8em;
+  }
+
+  .prose-blog hr {
+    border: 0;
+    border-top: 1px solid var(--border);
+    margin-block: 2.5em;
+  }
+
+  /* 行内代码 */
+  .prose-blog :not(pre) > code {
+    font-family: var(--font-mono);
+    font-size: 0.87em;
+    padding: 0.15em 0.4em;
+    border-radius: 0.35rem;
+    background-color: var(--bg-muted);
+    border: 1px solid var(--border);
+    color: var(--fg);
+    word-break: break-word;
+  }
+
+  /* 表格 */
+  .prose-blog table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+    display: block;
+    overflow-x: auto;
+  }
+
+  .prose-blog th,
+  .prose-blog td {
+    border: 1px solid var(--border);
+    padding: 0.5em 0.8em;
+    text-align: left;
+  }
+
+  .prose-blog th {
+    background-color: var(--bg-subtle);
+    font-weight: 600;
+  }
+
+  .prose-blog img {
+    border-radius: var(--radius-card);
+    border: 1px solid var(--border);
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* 脚注 */
+  .prose-blog .footnotes {
+    margin-top: 3em;
+    padding-top: 1.5em;
+    border-top: 1px solid var(--border);
+    font-size: 0.9em;
+    color: var(--fg-muted);
+  }
+}
+
+/* ==========================================================================
+   代码块
+   Shiki 输出双主题，用 CSS 变量按当前主题切换。
+   ========================================================================== */
+@layer components {
+  .code-block {
+    position: relative;
+    margin-block: 1.5em;
+    border-radius: var(--radius-card);
+    border: 1px solid var(--border);
+    background-color: var(--shiki-light-bg, var(--bg-subtle));
+    overflow: hidden;
+  }
+
+  .dark .code-block {
+    background-color: var(--shiki-dark-bg, var(--bg-subtle));
+  }
+
+  .code-block__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.4rem 0.5rem 0.4rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    background-color: color-mix(in oklch, var(--bg-muted) 65%, transparent);
+  }
+
+  .code-block__lang {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fg-subtle);
+    user-select: none;
+  }
+
+  .code-block__copy {
+    font-size: 0.75rem;
+    font-family: var(--font-sans);
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.4rem;
+    color: var(--fg-muted);
+    border: 1px solid transparent;
+    background-color: transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .code-block__copy:hover {
+    color: var(--fg);
+    background-color: var(--bg-muted);
+    border-color: var(--border);
+  }
+
+  .code-block__copy[data-copied='true'] {
+    color: var(--accent);
+  }
+
+  .code-block pre {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    line-height: 1.7;
+    background: transparent !important;
+  }
+
+  .code-block pre code {
+    font-family: inherit;
+    display: block;
+    width: fit-content;
+    min-width: 100%;
+  }
+
+  /* ------------------------------------------------------------------
+     双主题切换
+     Shiki 在双主题模式下的输出方式：
+       · 每个 token 上写内联样式 color:#xxx（浅色）和 --shiki-dark:#xxx（深色变量）
+       · <pre> 上是内联的浅色背景 + --shiki-dark-bg
+     内联样式优先级高于类选择器，所以这里必须用 !important 才能让 .dark 下的
+     深色变量覆盖它。缺少 --shiki-dark 的 token（未着色文本）回落到继承色。
+     ------------------------------------------------------------------ */
+  .astro-code,
+  .astro-code span {
+    font-style: var(--shiki-light-font-style, inherit);
+    font-weight: var(--shiki-light-font-weight, inherit);
+    text-decoration: var(--shiki-light-text-decoration, inherit);
+  }
+
+  .dark .astro-code,
+  .dark .astro-code span {
+    color: var(--shiki-dark) !important;
+    font-style: var(--shiki-dark-font-style, inherit);
+    font-weight: var(--shiki-dark-font-weight, inherit);
+    text-decoration: var(--shiki-dark-text-decoration, inherit);
+  }
+
+  .dark .astro-code {
+    background-color: var(--shiki-dark-bg, var(--bg-subtle)) !important;
+  }
+}
+
+/* ==========================================================================
+   工具类
+   ========================================================================== */
+@utility text-balance {
+  text-wrap: balance;
+}
+
+/* 渐显动画 */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer utilities {
+  .animate-fade-up {
+    animation: fade-up 0.5s ease both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-up {
+      animation: none;
+    }
+  }
+}

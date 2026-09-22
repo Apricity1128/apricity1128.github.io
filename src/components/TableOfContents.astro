@@ -1,0 +1,130 @@
+---
+/**
+ * TableOfContents —— 文章目录
+ *
+ * 由 Astro 的 render() 返回的 headings 生成，滚动时用 IntersectionObserver
+ * 高亮当前所在小节。
+ */
+const { headings = [], /** 是否在移动端折叠 */ collapsible = false } = Astro.props;
+
+// 只保留 h2 / h3，太深的层级会让目录变得很长
+const items = Array.isArray(headings) ? headings : (headings?.headings ?? []);
+const visible = items.filter((h) => h.depth === 2 || h.depth === 3);
+
+const minDepth = visible.length ? Math.min(...visible.map((h) => h.depth)) : 2;
+---
+
+{
+  visible.length > 0 && (
+    <nav class="toc text-sm" aria-labelledby="toc-heading">
+      <p
+        id="toc-heading"
+        class="mb-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-fg-subtle"
+      >
+        目录
+      </p>
+      <ul class={collapsible ? 'toc__list toc__list--collapsible' : 'toc__list'}>
+        {visible.map((h) => (
+          <li class:list={['toc__item', h.depth - minDepth > 0 && 'toc__item--nested']}>
+            <a href={`#${h.slug}`} class="toc__link" data-toc-link={h.slug}>
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<style>
+  .toc__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    border-left: 1px solid var(--border);
+  }
+
+  .toc__item {
+    position: relative;
+  }
+
+  .toc__item--nested {
+    padding-left: 1rem;
+  }
+
+  .toc__link {
+    display: block;
+    padding: 0.3rem 0.75rem;
+    margin-left: -1px;
+    border-left: 2px solid transparent;
+    color: var(--fg-subtle);
+    line-height: 1.45;
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease;
+    font-size: 0.85rem;
+  }
+
+  .toc__link:hover {
+    color: var(--fg);
+  }
+
+  .toc__link.is-active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+  }
+
+  /* 移动端默认折叠，点标题展开 */
+  .toc__list--collapsible {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+
+  :global(.toc[data-open='true']) .toc__list--collapsible {
+    max-height: 60vh;
+  }
+</style>
+
+<script>
+  // 高亮当前阅读位置对应的目录项
+  const links = Array.from(document.querySelectorAll('[data-toc-link]'));
+  const headings = links
+    .map((link) => {
+      const slug = link.getAttribute('data-toc-link');
+      const el = slug ? document.getElementById(slug) : null;
+      return el ? { el, link } : null;
+    })
+    .filter(Boolean);
+
+  if (headings.length > 0) {
+    let visible = new Set();
+
+    const update = () => {
+      // 选取当前视口中最靠上的可见标题
+      const inView = headings.filter((h) => visible.has(h.el));
+      const current = inView.length > 0
+        ? inView[0]
+        : // 没有可见标题时，取最后一个已经滚过去的
+          [...headings].reverse().find((h) => h.el.getBoundingClientRect().top < 120) ?? null;
+
+      links.forEach((l) => l.classList.remove('is-active'));
+      current?.link.classList.add('is-active');
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) visible.add(entry.target);
+          else visible.delete(entry.target);
+        }
+        update();
+      },
+      // 顶部留出导航栏高度，底部收窄，只在标题靠近顶部时算「当前」
+      { rootMargin: '-80px 0px -70% 0px', threshold: 0 }
+    );
+
+    headings.forEach((h) => observer.observe(h.el));
+    update();
+  }
+</script>

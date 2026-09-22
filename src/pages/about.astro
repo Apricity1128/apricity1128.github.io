@@ -1,0 +1,134 @@
+---
+/**
+ * 关于页 /about
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { SITE } from '../data/site.mjs';
+
+const stack = [
+  { name: 'Astro', note: '静态站点框架，内容优先、零 JS 默认' },
+  { name: 'Tailwind CSS v4', note: '原子化样式，主题令牌集中在 global.css' },
+  { name: 'Pagefind', note: '构建期生成索引的纯静态全文搜索' },
+  { name: 'Shiki', note: '代码高亮，浅色/深色双主题' },
+  { name: 'GitHub Actions', note: '推送即自动构建部署' },
+  { name: 'GitHub Pages', note: '免费托管与 HTTPS' },
+];
+---
+
+<BaseLayout title="关于" description={`关于 ${SITE.author.name} 和这个站点`}>
+  <div class="container-page pt-10 sm:pt-14">
+    <header class="mb-10 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
+      <img
+        src={SITE.author.avatar}
+        alt={`${SITE.author.name} 的头像`}
+        width="80"
+        height="80"
+        class="h-20 w-20 rounded-full border border-border bg-bg-subtle object-cover"
+      />
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight text-fg">{SITE.author.name}</h1>
+        <p class="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-fg-muted">
+          <span>{SITE.author.location}</span>
+          <span class="text-fg-subtle">/</span>
+          <span>{SITE.author.bio}</span>
+        </p>
+        <div class="mt-3 flex flex-wrap gap-2">
+          {
+            SITE.socials.map((item) => (
+              <a
+                href={item.href}
+                target={item.href.startsWith('http') ? '_blank' : undefined}
+                rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                class="flex items-center gap-1.5 rounded-lg border border-border bg-bg-subtle px-2.5 py-1.5 text-xs text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
+              >
+                <Icon name={item.icon} size={13} />
+                {item.label}
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </header>
+
+    <!-- 自我介绍 -->
+    <section class="mb-12">
+      <h2 class="section-title">
+        <span class="inline-block h-4 w-1 rounded-full bg-accent"></span>
+        关于我
+      </h2>
+      <div class="prose-blog">
+        <p>
+          你好，我是 {SITE.author.name}。这里是我的个人博客，用来记录学习和折腾的痕迹。
+        </p>
+        <p>
+          我把这里当作一个公开的笔记本：技术笔记写下来是为了逼自己想清楚，
+          读书摘录写下来是为了以后还能找到，随笔则是给未来的自己留个存档。
+        </p>
+        <p>
+          如果你对某篇文章有想法，或者发现了错误，非常欢迎通过
+          <a href={SITE.socials.find((s) => s.icon === 'mail')?.href ?? '/about'}>邮件</a>
+          告诉我。
+        </p>
+      </div>
+    </section>
+
+    <!-- 这个站点 -->
+    <section class="mb-12">
+      <h2 class="section-title">
+        <span class="inline-block h-4 w-1 rounded-full bg-accent"></span>
+        关于这个站点
+      </h2>
+      <p class="mb-5 text-sm leading-relaxed text-fg-muted">
+        整站是静态生成的，没有任何后端和数据库，托管在 GitHub Pages 上。
+        写一篇新文章只需要往仓库里加一个 Markdown 文件。
+      </p>
+      <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+        {
+          stack.map((item) => (
+            <div class="card flex items-baseline gap-3 p-3.5">
+              <span class="font-medium text-fg">{item.name}</span>
+              <span class="text-xs leading-relaxed text-fg-subtle">{item.note}</span>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- 联系 -->
+    <section>
+      <h2 class="section-title">
+        <span class="inline-block h-4 w-1 rounded-full bg-accent"></span>
+        联系我
+      </h2>
+      <div class="space-y-2.5 text-sm text-fg-muted">
+        {
+          SITE.socials.map((item) => (
+            <p class="flex items-center gap-2.5">
+              <span class="text-fg-subtle">
+                <Icon name={item.icon} size={14} />
+              </span>
+              <span class="w-16 text-fg-subtle">{item.label}</span>
+              <a
+                href={item.href}
+                target={item.href.startsWith('http') ? '_blank' : undefined}
+                rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                class="link-underline text-fg"
+              >
+                {item.href.replace(/^mailto:/, '')}
+              </a>
+            </p>
+          ))
+        }
+      </div>
+
+      <p class="mt-8 text-xs text-fg-subtle">
+        本站由 Astro 构建，源码在
+        <a href={SITE.repo} target="_blank" rel="noopener noreferrer" class="link-underline text-fg-muted">
+          GitHub
+        </a>
+        上开源。
+      </p>
+    </section>
+  </div>
+</BaseLayout>

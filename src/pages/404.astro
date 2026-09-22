@@ -1,0 +1,41 @@
+---
+/**
+ * 404
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+---
+
+<BaseLayout title="页面不存在" description="找不到这个页面">
+  <div class="container-page flex min-h-[60vh] flex-col items-center justify-center text-center">
+    <p class="font-mono text-6xl font-bold tracking-tight text-accent">404</p>
+    <h1 class="mt-4 text-xl font-semibold text-fg">这个页面不存在</h1>
+    <p class="mt-2 max-w-sm text-sm leading-relaxed text-fg-muted">
+      链接可能已经失效，或者文章被移走了。不妨从首页或者文章列表重新找找。
+    </p>
+
+    <div class="mt-7 flex flex-wrap items-center justify-center gap-2.5">
+      <a
+        href="/"
+        class="flex items-center gap-1.5 rounded-lg border border-border bg-bg-subtle px-3.5 py-2 text-sm text-fg transition-colors hover:border-border-strong"
+      >
+        <Icon name="arrowLeft" size={14} />
+        返回首页
+      </a>
+      <a
+        href="/blog"
+        class="flex items-center gap-1.5 rounded-lg border border-border bg-bg-subtle px-3.5 py-2 text-sm text-fg transition-colors hover:border-border-strong"
+      >
+        <Icon name="book" size={14} />
+        浏览文章
+      </a>
+      <a
+        href="/search"
+        class="flex items-center gap-1.5 rounded-lg border border-border bg-bg-subtle px-3.5 py-2 text-sm text-fg transition-colors hover:border-border-strong"
+      >
+        <Icon name="search" size={14} />
+        搜索
+      </a>
+    </div>
+  </div>
+</BaseLayout>

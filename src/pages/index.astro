@@ -1,0 +1,162 @@
+---
+/**
+ * 首页 —— 参考 arthals.ink 的双栏结构
+ *
+ * 宽屏：左侧个人卡片（sticky），右侧 About / 文章 / 经历 / 技能
+ * 窄屏：单栏纵向堆叠
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import PostCard from '../components/PostCard.astro';
+import Profile from '../components/Profile.astro';
+import { SITE } from '../data/site.mjs';
+import { getSortedPosts, getTagCounts, tagToSlug } from '../utils/posts.js';
+
+const posts = await getSortedPosts();
+const tags = await getTagCounts();
+const latest = posts.slice(0, SITE.homePostLimit);
+---
+
+<BaseLayout wide>
+  <div class="container-wide pt-10 sm:pt-14">
+    <div class="grid grid-cols-1 gap-10 lg:grid-cols-[16rem_1fr] lg:gap-14">
+      <!-- ============ 左栏：个人卡片 ============ -->
+      <!-- data-pagefind-ignore：个人资料和标签云属于界面元素，
+           收进搜索索引会污染搜索结果（比如搜「博客」会命中导航文字） -->
+      <aside data-pagefind-ignore class="lg:sticky lg:top-24 lg:self-start">
+        <Profile />
+
+        <!-- 标签云 -->
+        {
+          tags.length > 0 && (
+            <div class="mt-8 hidden lg:block">
+              <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
+                标签
+              </p>
+              <div class="flex flex-wrap gap-1.5">
+                {tags.slice(0, 12).map(({ tag, count }) => (
+                  <a href={`/tags/${tagToSlug(tag)}`} class="chip">
+                    {tag}
+                    <span class="text-fg-subtle">{count}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )
+        }
+      </aside>
+
+      <!-- ============ 右栏：主要内容 ============ -->
+      <div class="min-w-0 space-y-14">
+        <!-- About -->
+        <section class="animate-fade-up">
+          <h2 class="section-title">
+            <span class="inline-block h-4 w-1 rounded-full bg-accent"></span>
+            关于
+          </h2>
+          <div class="space-y-4 text-[0.95rem] leading-[1.85] text-fg-muted">
+            {
+              SITE.about.map((paragraph, i) => (
+                <p class={i === 0 ? 'text-fg' : undefined}>{paragraph}</p>
+              ))
+            }
+          </div>
+          <a
+            href="/about"
+            class="mt-5 inline-flex items-center gap-1.5 text-sm text-accent transition-opacity hover:opacity-75"
+          >
+            了解更多
+            <Icon name="arrowRight" size={14} />
+          </a>
+        </section>
+
+        <!-- 文章 -->
+        <section class="animate-fade-up">
+          <h2 class="section-title">
+            <span class="inline-block h-4 w-1 rounded-full bg-accent"></span>
+            文章
+            <a
+              href="/blog"
+              class="ml-auto text-xs font-normal text-fg-subtle transition-colors hover:text-accent"
+            >
+              查看全部 →
+            </a>
+          </h2>
+
+          {
+            latest.length > 0 ? (
+              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {latest.map((post) => (
+                  <PostCard post={post} showExcerpt={false} />
+                ))}
+              </div>
+            ) : (
+              <p class="card p-5 text-sm text-fg-muted">
+                还没有文章。在 <code class="text-accent">src/content/blog/</code> 里新建一个
+                .md 文件就能发布了。
+              </p>
+            )
+          }
+        </section>
+
+        <!-- 经历 -->
+        {
+          SITE.education.length > 0 && (
+            <section class="animate-fade-up">
+              <h2 class="section-title">
+                <span class="inline-block h-4 w-1 rounded-full bg-accent" />
+                经历
+              </h2>
+              <div class="space-y-3">
+                {SITE.education.map((item) => {
+                  const Tag = item.href ? 'a' : 'div';
+                  return (
+                    <Tag
+                      href={item.href || undefined}
+                      target={item.href ? '_blank' : undefined}
+                      rel={item.href ? 'noopener noreferrer' : undefined}
+                      class:list={[
+                        'card block p-4',
+                        item.href && 'card-hover',
+                      ]}
+                    >
+                      <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                        <h3 class="font-semibold text-fg">{item.school}</h3>
+                        <span class="text-xs text-fg-subtle">{item.period}</span>
+                      </div>
+                      <p class="mt-1 text-sm text-fg-muted">{item.degree}</p>
+                    </Tag>
+                  );
+                })}
+              </div>
+            </section>
+          )
+        }
+
+        <!-- 技能 -->
+        {
+          SITE.skills.length > 0 && (
+            <section class="animate-fade-up">
+              <h2 class="section-title">
+                <span class="inline-block h-4 w-1 rounded-full bg-accent" />
+                技能
+              </h2>
+              <div class="grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2">
+                {SITE.skills.map((group) => (
+                  <div>
+                    <h3 class="mb-2.5 text-sm font-semibold text-fg">{group.group}</h3>
+                    <div class="flex flex-wrap gap-1.5">
+                      {group.items.map((item) => (
+                        <span class="chip">{item}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</BaseLayout>

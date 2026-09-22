@@ -1,0 +1,43 @@
+name: Deploy to GitHub Pages
+
+on:
+  # 推送到 main 分支即自动构建部署
+  push:
+    branches: [main]
+  # 也可以在 Actions 页面手动触发
+  workflow_dispatch:
+
+# 允许 job 克隆仓库并发布到 Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时间只保留一次部署；不打断正在进行的发布
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v7
+
+      # withastro/action 会自动识别 package-lock.json 选择 npm，
+      # 依次执行 install → build，并生成 Pagefind 索引（见 src/integrations/pagefind.mjs），
+      # 最后把 dist/ 作为 Pages 产物上传。
+      - name: 安装依赖并构建
+        uses: withastro/action@v6
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 部署到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

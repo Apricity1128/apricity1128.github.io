@@ -1,0 +1,23 @@
+{
+  "intro": "这里放一些我自己做的小东西。多数是自用工具和小实验，代码基本都开源在 GitHub 上。",
+  "items": [
+    {
+      "name": "个人博客",
+      "description": "你正在看的这个网站。基于 Astro 构建，支持深色模式、全文搜索和标签分类，通过 GitHub Actions 自动部署到 GitHub Pages。",
+      "tags": ["Astro", "Tailwind CSS", "TypeScript"],
+      "href": "https://github.com/Apricity1128/apricity1128.github.io",
+      "repo": "https://github.com/Apricity1128/apricity1128.github.io",
+      "year": "2026",
+      "featured": true
+    },
+    {
+      "name": "示例项目",
+      "description": "把 src/data/projects.json 里的这一项换成你自己的项目就行。可以写清楚它解决了什么问题、用了什么技术。",
+      "tags": ["示例"],
+      "href": "",
+      "repo": "",
+      "year": "2026",
+      "featured": false
+    }
+  ]
+}
