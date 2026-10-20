@@ -8,10 +8,10 @@ import PageLayout from '@/layouts/CommonPage.astro'
 import FriendList from '@/components/links/FriendList.astro'
 
 const headings = [
-  { depth: 2, slug: 'common-links', text: 'Common Links' },
-  { depth: 2, slug: 'special-links', text: 'Special Links' },
-  { depth: 2, slug: 'apply-links', text: 'Apply Links' },
-  { depth: 2, slug: 'friend-circle', text: 'Friend Circle' }
+  { depth: 2, slug: 'common-links', text: '常用友链' },
+  { depth: 2, slug: 'special-links', text: '其他站点' },
+  { depth: 2, slug: 'apply-links', text: '申请友链' },
+  { depth: 2, slug: 'friend-circle', text: '好友圈' }
 ]
 
 const { friends } = links
@@ -59,14 +59,13 @@ const linksConf = config.integ.links
     </li>
     <li>内容不违反国家法律 Content does not violate laws</li>
   </ul>
-  <h2 id='friend-circle'>Friend Circle</h2>
+  <h2 id='friend-circle'>好友圈</h2>
   <p class='text-muted-foreground'>
-    好友圈需要自己部署一套 Friend-Circle-Lite 后端服务。原仓库这里指向作者自己的服务器
-    （friends.arthals.ink），已移除。想启用的话参考
+    好友圈功能需要自行部署一个后端服务来聚合各站点的最新文章。如果你想启用，可以参考
     <a href='https://github.com/Rock-Candy-Tea/hexo-circle-of-friends' target='_blank'
       >Friend-Circle-Lite</a
     >
-    的说明部署后，把下面的注释打开并填上你的地址。
+    的说明部署，然后在源码里取消注释并填入你的服务地址。
   </p>
   <!--
   <div id='friend-circle-lite-root' class='not-prose'>Loading...</div>

@@ -5,8 +5,10 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
-    "build:full": "astro check && astro build",
+    "build": "node scripts/check-posts.mjs && astro build",
+    "build:only": "astro build",
+    "posts:check": "node scripts/check-posts.mjs",
+    "build:full": "astro check && node scripts/check-posts.mjs && astro build",
     "preview": "astro preview",
     "sync": "astro sync",
     "check": "astro check",
