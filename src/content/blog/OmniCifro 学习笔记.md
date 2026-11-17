@@ -1,5 +1,5 @@
 ---
-title:OmniCifro学习笔记
+title: OmniCifro 学习笔记
 publishDate: 2026-11-14
 description: FHE加速
 tags: [ICPC, 算法, 模板, 笔记]

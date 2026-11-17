@@ -1,7 +1,7 @@
 ---
 title: 南京站游记
-publishDate: 2026-11.10
-description: 
+publishDate: 2026-11-10
+description: 2026 年 ICPC 南京站参赛游记：从赛前准备到 Day2 的碎碎念。
 tags:
   - 游记
 ---
